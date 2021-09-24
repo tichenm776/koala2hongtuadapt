@@ -12,6 +12,7 @@ import (
 	"zhiyuan/koala2hongtuadapt/model"
 	"zhiyuan/koala2hongtuadapt/util"
 	hongtu "zhiyuan/koala_api_go/hongtu_api"
+	hongtu2 "zhiyuan/koala2hongtuadapt/hongtu"
 	koala "zhiyuan/koala_api_go/koala_api"
 	"zhiyuan/zyutil/config"
 )
@@ -222,29 +223,8 @@ func GetEmployeeList(c *gin.Context){
 		err  error
 	)
 	name,_ := c.Params.Get("name")
-	//category,_ := c.Params.Get("category")
-	//subject_type := -1
-	//if category != ""{
-	//	if category == "user"{
-	temp_map["type"] = 1
-		//}else if category == "visitor"{
-		//	temp_map["type"] = 2
-		//}
-	//}
-	if name != ""{
-		temp_map["name"] = name
-	}
 
-	temp_map["pageNum"] = 1
-	temp_map["pageSize"] = 10000
-	//list := []map[string]interface{}{temp_map}
-	//params := map[string]interface{}{
-	//	"personList":list,
-	//}
-
-
-
-	personlist, err := hongtu.PersonList(temp_map)
+	personlist,err := hongtu2.GetEmployeeList(name)
 	if err != nil {
 		resp4Device.Code = -100
 		resp4Device.Err_msg = temp_map["name"].(string) + "查询失败"
@@ -254,22 +234,18 @@ func GetEmployeeList(c *gin.Context){
 		return
 	}
 
-	if value,err := personlist.Get("code").Int();err == nil{
-		if value == 0{
-			if array,err := personlist.Get("data").Array();err == nil{
-				if len(array) > 0 {
-
-				}
-			}
-		}
-	}
-
-
+	//类型转换 hongtu->koala
 
 	//ship := model.SubjectShip{Uuid: uuid}
 	//db.CreateSubjectShip()
 
 
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"err_msg": "",
+		"data":    personlist,
+		"page":map[string]interface{}{},
+	})
 
 
 

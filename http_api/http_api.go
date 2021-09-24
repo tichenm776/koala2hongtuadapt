@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"zhiyuan/koala2hongtuadapt/dao"
 	"zhiyuan/koala2hongtuadapt/hongtu"
 	"zhiyuan/koala2hongtuadapt/server"
 	"zhiyuan/koala2hongtuadapt/util"
@@ -92,19 +93,23 @@ func Identify_Init(koala_host,koala_username,koala_password string)(){
 
 
 func GetSubjectsLocal(){
-
+	dao.FindSubjectShip("")
 }
 
 func GetSubjectsHongtu(){
-
+	hongtu.GetEmployeeList("")
 }
 
 func GetGroupsLocal(){
-
+	dao.FindGroupShip("")
 }
 
 func GetGroupsHongtu(){
-
+	temp_map := make(map[string]interface{},0)
+	temp_map["type"] = 1
+	temp_map["pageNum"] = 1
+	temp_map["pageSize"] = 10000
+	hongtu.GetGroupsHongtuList(temp_map)
 }
 
 

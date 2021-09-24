@@ -503,8 +503,6 @@ func GetVisitor_Sign(req *model.QRCODE_VisitorReq)(open bool, err error){
 	return true, nil
 }
 
-
-
 func GetSubjectShip(id int) (result model.SubjectShip, err error) {
 
 	if err := Db.Model(model.SubjectShip{}).Where("id = ?",id).Last(&result); err.Error != nil {
@@ -512,6 +510,7 @@ func GetSubjectShip(id int) (result model.SubjectShip, err error) {
 	}
 	return result, nil
 }
+
 func GetSubjectShipUuid(uuid string) (result model.SubjectShip, err error) {
 
 	if err := Db.Model(model.SubjectShip{}).Where("uuid = ?",uuid).Last(&result); err.Error != nil {
@@ -519,6 +518,7 @@ func GetSubjectShipUuid(uuid string) (result model.SubjectShip, err error) {
 	}
 	return result, nil
 }
+
 func GetPhotoShip(id int) (result model.PhotoShip, err error) {
 
 	if err := Db.Model(model.PhotoShip{}).Where("id = ?",id).Last(&result); err.Error != nil {
@@ -538,7 +538,6 @@ func CreateSubjectShip(data *model.SubjectShip) (SubjectShip model.SubjectShip, 
 	}
 	return SubjectShip, nil
 }
-
 
 func CreatePhotoShip(data *model.PhotoShip) (PhotoShip model.PhotoShip, err error) {
 	if err := Db.Create(data); err.Error != nil {
@@ -565,20 +564,71 @@ func CreateGroupShip(data *model.GroupShip) (GroupShip model.GroupShip, err erro
 	return GroupShip, nil
 }
 
+func FindSubjectShip(uuid string) (SubjectShip []model.SubjectShip, err error) {
 
+	Dbdata := Db.Debug()
 
-func FindSubjectShip() (SubjectShip []model.SubjectShip, err error) {
-	if err := Db.Find(&SubjectShip); err.Error != nil {
+	if uuid != ""{
+		Dbdata.Where("uuid = ?",uuid)
+	}
+	if err := Dbdata.Find(&SubjectShip); err.Error != nil {
 		log4go.Error(err)
 		return SubjectShip, errors.New("select all employee  err")
 	}
 	return SubjectShip, nil
 }
 
-func FindGroupShip() (GroupShip []model.GroupShip, err error) {
-	if err := Db.Find(&GroupShip); err.Error != nil {
+func FindGroupShip(uuid string) (GroupShip []model.GroupShip, err error) {
+
+	Dbdata := Db.Debug()
+
+	if uuid != ""{
+		Dbdata.Where("subject_uuid = ?",uuid)
+	}
+	if err := Dbdata.Find(&GroupShip); err.Error != nil {
 		log4go.Error(err)
 		return GroupShip, errors.New("select all employee  err")
 	}
 	return GroupShip, nil
+}
+
+func FindPhotoShip(uuid string) (PhotoShip []model.PhotoShip, err error) {
+
+	Dbdata := Db.Debug()
+
+	if uuid != ""{
+		Dbdata.Where("subject_uuid = ?",uuid)
+	}
+	if err := Dbdata.Find(&PhotoShip); err.Error != nil {
+		log4go.Error(err)
+		return PhotoShip, errors.New("select all employee  err")
+	}
+	return PhotoShip, nil
+}
+
+func DeleteSubjectShip(uuid string) ( err error) {
+	SubjectShip := model.SubjectShip{}
+	if err := Db.Debug().Where("uuid = ?",uuid).Delete(&SubjectShip); err.Error != nil {
+		log4go.Error(err)
+		return  errors.New("select all employee  err")
+	}
+	return  nil
+}
+
+func DeleteGroupShip(uuid string) ( err error) {
+	GroupShip := model.GroupShip{}
+	if err := Db.Debug().Where("subject_uuid = ?",uuid).Delete(&GroupShip); err.Error != nil {
+		log4go.Error(err)
+		return  errors.New("select all employee  err")
+	}
+	return  nil
+}
+
+func DeletePhotoShip(uuid string) ( err error) {
+	PhotoShip := model.PhotoShip{}
+	if err := Db.Debug().Where("subject_uuid = ?",uuid).Delete(&PhotoShip); err.Error != nil {
+		log4go.Error(err)
+		return  errors.New("select all employee  err")
+	}
+	return  nil
 }

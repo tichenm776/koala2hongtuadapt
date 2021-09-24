@@ -501,3 +501,73 @@ func Visitor2Koala(visitor model.Visitor) (model.Visitor, error) {
 	//subject_id, _ := res_map["id"].(json.Number).Int()
 	return visitor, nil
 }
+
+func GetEmployeeList(name string)([]map[string]interface{},error){
+
+	temp_map := make(map[string]interface{},0)
+	person_map_list := make([]map[string]interface{},0)
+	var (
+		err  error
+	)
+	temp_map["type"] = 1
+	if name != ""{
+		temp_map["name"] = name
+	}
+
+	temp_map["pageNum"] = 1
+	temp_map["pageSize"] = 10000
+
+	personlist, err := hongtu.PersonList(temp_map)
+	if err != nil {
+		log4go.Error(temp_map["name"].(string) + "查询失败")
+		return nil,err
+	}
+
+	if value,err := personlist.Get("code").Int();err == nil{
+		if value == 0{
+			if array,err := personlist.Get("data").Array();err == nil{
+				if len(array) > 0 {
+					for k,_ := range array{
+						if value,ok := array[k].(map[string]interface{});ok{
+							person_map_list = append(person_map_list, value)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return person_map_list,nil
+
+}
+
+func GetGroupsHongtuList(params interface{})([]map[string]interface{},error){
+
+	person_map_list := make([]map[string]interface{},0)
+	var (
+		err  error
+	)
+
+	personlist, err := hongtu.Passgrouplist(params)
+	if err != nil {
+		log4go.Error("查询失败",err)
+		return nil,err
+	}
+
+	if value,err := personlist.Get("code").Int();err == nil{
+		if value == 0{
+			if array,err := personlist.Get("data").Array();err == nil{
+				if len(array) > 0 {
+					for k,_ := range array{
+						if value,ok := array[k].(map[string]interface{});ok{
+							person_map_list = append(person_map_list, value)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return person_map_list,nil
+
+}
