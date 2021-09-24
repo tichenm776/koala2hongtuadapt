@@ -1,0 +1,17 @@
+server_port: 5600
+server_port_theme: 5000
+koala_host: 192.168.18.51
+koala_port: 80
+koala_core_port: 8080
+db_username: root
+db_password: root
+db_ip: 127.0.0.1
+db_port: 3306
+db_name: koalamate_meeting
+koala_apis_host: http://127.0.0.1:5001
+koala_username: admin@91zo.com
+koala_password: admin123
+arm_path: /zybox/
+amd64_path: /zhiyuan/
+amd64_fullpath: /home/zhiyuan/venv/bin/
+wechat_url: http://xrkrj.cn/zo91sms_zhiyuan

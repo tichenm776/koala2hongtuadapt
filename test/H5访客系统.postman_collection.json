@@ -1,0 +1,1616 @@
+{
+	"info": {
+		"_postman_id": "fb896d7a-cfb0-4bfe-a11d-896d893a1e18",
+		"name": "H5访客系统",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "微信相关",
+			"item": [
+				{
+					"name": "员工微信",
+					"item": [
+						{
+							"name": "微信解绑",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding/{{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding",
+										"{{weixinUserId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "员工是否绑定--未绑定",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    //pm.expect(jsonData.code).to.eql(0);",
+											"    //pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"data is ok\", function () {",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(404);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"没有该微信号绑定的用户\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding?weixinUserId={{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "weixinUserId",
+											"value": "{{weixinUserId}}"
+										},
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "员工微信绑定-绑定失败-考拉里没有对应人",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码",
+											"pm.environment.set(\"name\", \"雷振林\");",
+											"pm.environment.set(\"phone\", \"13355780753\"); //错误的手机号"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).not.to.eql(0);",
+											"    //pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"weixinUserId\": \"{{weixinUserId}}\",\"name\":\"{{name}}\",\"phone\":\"{{phone}}\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "员工是否绑定--未绑定",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    //pm.expect(jsonData.code).to.eql(0);",
+											"    //pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"data is ok\", function () {",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(404);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"没有该微信号绑定的用户\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding?weixinUserId={{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "weixinUserId",
+											"value": "{{weixinUserId}}"
+										},
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "员工微信绑定-绑定成功",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码",
+											"pm.environment.set(\"name\", \"雷振林\");",
+											"pm.environment.set(\"phone\", \"13355780752\"); //正确的手机号"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"data is ok\", function () {",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.data.name).to.eql(pm.environment.get(\"name\"));",
+											"    pm.expect(jsonData.data.phone).to.eql(pm.environment.get(\"phone\"));",
+											"});",
+											"",
+											"var schema = {",
+											"    \"type\": \"object\",",
+											"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+											"    \"properties\":{",
+											"        \"code\": {\"type\": \"integer\"},",
+											"        \"err_msg\": {\"type\": \"string\"},",
+											"       \"data\": {",
+											"             \"type\": \"object\",",
+											"             \"required\":[\"avatar\",\"name\",\"department\",\"subject_id\", \"phone\"],",
+											"             \"properties\":{",
+											"                \"avatar\": {\"type\": \"string\"},",
+											"                \"name\": {\"type\": \"string\"},",
+											"                \"department\": {\"type\": \"string\"},",
+											"                \"subject_id\":  {\"type\": \"integer\"},",
+											"                \"phone\":  {\"type\": \"string\"},",
+											"            }",
+											"        }",
+											"    }",
+											"};",
+											"",
+											"pm.test('Response Schema is valid', function() {",
+											"  var jsonData = JSON.parse(responseBody);",
+											"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"weixinUserId\": \"{{weixinUserId}}\",\"name\":\"{{name}}\",\"phone\":\"{{phone}}\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "员工是否绑定--已绑定",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"",
+											"var schema = {",
+											"    \"type\": \"object\",",
+											"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+											"    \"properties\":{",
+											"        \"code\": {\"type\": \"integer\"},",
+											"        \"err_msg\": {\"type\": \"string\"},",
+											"       \"data\": {",
+											"             \"type\": \"object\",",
+											"             \"required\":[\"avatar\",\"name\",\"department\",\"subject_id\", \"phone\"],",
+											"             \"properties\":{",
+											"                \"avatar\": {\"type\": \"string\"},",
+											"                \"name\": {\"type\": \"string\"},",
+											"                \"department\": {\"type\": \"string\"},",
+											"                \"subject_id\":  {\"type\": \"integer\"},",
+											"                \"phone\":  {\"type\": \"string\"},",
+											"            }",
+											"        }",
+											"    }",
+											"};",
+											"",
+											"pm.test('Response Schema is valid', function() {",
+											"  var jsonData = JSON.parse(responseBody);",
+											"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding?weixinUserId={{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "weixinUserId",
+											"value": "{{weixinUserId}}"
+										},
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "访客微信",
+					"item": [
+						{
+							"name": "微信解绑",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/subject/binding/{{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"subject",
+										"binding",
+										"{{weixinUserId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "访客是否绑定--未绑定",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    //pm.expect(jsonData.code).to.eql(0);",
+											"    //pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"data is ok\", function () {",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(404);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"没有该微信号绑定的用户\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/visitor/binding?weixinUserId={{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"visitor",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "weixinUserId",
+											"value": "{{weixinUserId}}"
+										},
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "访客微信绑定-绑定成功",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码",
+											"pm.environment.set(\"phone\", \"13355780752\"); "
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"data is ok\", function () {",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.data.phone).to.eql(pm.environment.get(\"phone\"));",
+											"});",
+											"",
+											"var schema = {",
+											"    \"type\": \"object\",",
+											"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+											"    \"properties\":{",
+											"        \"code\": {\"type\": \"integer\"},",
+											"        \"err_msg\": {\"type\": \"string\"},",
+											"       \"data\": {",
+											"             \"type\": \"object\",",
+											"            \"required\":[\"avatar\",\"nick\", \"phone\"],",
+											"             \"properties\":{",
+											"                \"avatar\": {\"type\": \"string\"},",
+											"                \"nick\": {\"type\": \"string\"},",
+											"                \"phone\":  {\"type\": \"string\"},",
+											"            }",
+											"        }",
+											"    }",
+											"};",
+											"",
+											"pm.test('Response Schema is valid', function() {",
+											"  var jsonData = JSON.parse(responseBody);",
+											"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"weixinUserId\": \"{{weixinUserId}}\",\"phone\":\"{{phone}}\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/v1/visitor/binding",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"visitor",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "访客是否绑定--已绑定",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"code and err_msg is ok\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"data is ok\", function () {",
+											"    var jsonData = JSON.parse(responseBody);",
+											"    //pm.expect(jsonData.code).to.eql(404);",
+											"    //pm.expect(jsonData.err_msg).to.eql(\"没有该微信号绑定的用户\");",
+											"});",
+											"",
+											"var schema = {",
+											"    \"type\": \"object\",",
+											"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+											"    \"properties\":{",
+											"        \"code\": {\"type\": \"integer\"},",
+											"        \"err_msg\": {\"type\": \"string\"},",
+											"       \"data\": {",
+											"             \"type\": \"object\",",
+											"            \"required\":[\"avatar\",\"nick\", \"phone\"],",
+											"             \"properties\":{",
+											"                \"avatar\": {\"type\": \"string\"},",
+											"                \"nick\": {\"type\": \"string\"},",
+											"                \"phone\":  {\"type\": \"string\"},",
+											"            }",
+											"        }",
+											"    }",
+											"};",
+											"",
+											"pm.test('Response Schema is valid', function() {",
+											"  var jsonData = JSON.parse(responseBody);",
+											"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/v1/visitor/binding?weixinUserId={{weixinUserId}}",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"v1",
+										"visitor",
+										"binding"
+									],
+									"query": [
+										{
+											"key": "weixinUserId",
+											"value": "{{weixinUserId}}"
+										},
+										{
+											"key": "_t",
+											"value": "1622542048",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "访客申请",
+			"item": [
+				{
+					"name": "员工微信绑定-先绑定",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"weixinUserId\", \"oJajH6SCem9MSNa_gUgVsqABFPR4\"); // 雷振林的微信号码",
+									"pm.environment.set(\"name\", \"雷振林\");",
+									"pm.environment.set(\"phone\", \"13355780752\"); //正确的手机号"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.data.name).to.eql(pm.environment.get(\"name\"));",
+									"    pm.expect(jsonData.data.phone).to.eql(pm.environment.get(\"phone\"));",
+									"});",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"             \"type\": \"object\",",
+									"             \"required\":[\"avatar\",\"name\",\"department\",\"subject_id\", \"phone\"],",
+									"             \"properties\":{",
+									"                \"avatar\": {\"type\": \"string\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"department\": {\"type\": \"string\"},",
+									"                \"subject_id\":  {\"type\": \"integer\"},",
+									"                \"phone\":  {\"type\": \"string\"},",
+									"            }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"weixinUserId\": \"{{weixinUserId}}\",\"name\":\"{{name}}\",\"phone\":\"{{phone}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/subject/binding",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"subject",
+								"binding"
+							],
+							"query": [
+								{
+									"key": "_t",
+									"value": "1622542048",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "访客申请-员工邀约-无随行人员",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"visitor_name\", \"访客1\"); ",
+									"pm.environment.set(\"visitor_phone\", \"13511111111\"); ",
+									"pm.environment.set(\"purpose\", 1); ",
+									"pm.environment.set(\"come_from\", \"杭州xxxx有限公司\"); ",
+									"pm.environment.set(\"proposer\", \"13355780752\"); ",
+									"pm.environment.set(\"interviewee\", \"雷振林\"); ",
+									"pm.environment.set(\"interviewee_phone\", \"13355780752\"); ",
+									"pm.environment.set(\"start_time\", 1625446800); ",
+									"pm.environment.set(\"end_time\", 1625475600); ",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.data.name).to.eql(pm.environment.get(\"visitor_name\"));",
+									"    pm.expect(jsonData.data.phone).to.eql(pm.environment.get(\"visitor_phone\"));",
+									"    pm.expect(jsonData.data.purpose).to.eql(pm.environment.get(\"purpose\"));",
+									"    pm.expect(jsonData.data.come_from).to.eql(pm.environment.get(\"come_from\"));",
+									"    pm.expect(jsonData.data.proposer).to.eql(pm.environment.get(\"proposer\"));",
+									"    pm.expect(jsonData.data.interviewee).to.eql(pm.environment.get(\"interviewee\"));",
+									"    pm.expect(jsonData.data.interviewee_phone).to.eql(pm.environment.get(\"interviewee_phone\"));",
+									"    pm.expect(jsonData.data.start_time).to.eql(pm.environment.get(\"start_time\"));",
+									"    pm.expect(jsonData.data.end_time).to.eql(pm.environment.get(\"end_time\"));",
+									"",
+									"    // 后台的部分数据先保存起来，给后面的接口用",
+									"    pm.environment.set(\"record_id\", jsonData.data.id);  // 访客申请记录id",
+									"    pm.environment.set(\"visitor_id\", jsonData.data.subject_id);  // 访客申请记录id",
+									"});",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"             \"type\": \"object\",",
+									"            \"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"retinues\"],",
+									"             \"properties\":{",
+									"                \"id\": {\"type\": \"integer\"},",
+									"                \"subject_id\": {\"type\": \"integer\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"phone\": {\"type\": \"string\"},",
+									"                \"purpose\":  {\"type\": \"integer\"},",
+									"                \"come_from\": {\"type\": \"string\"},",
+									"                \"proposer\": {\"type\": \"string\"},",
+									"                \"interviewee\": {\"type\": \"string\"},",
+									"                \"interviewee_phone\": {\"type\": \"string\"},",
+									"                \"start_time\": {\"type\": \"integer\"},",
+									"                \"end_time\": {\"type\": \"integer\"},",
+									"                \"retinues\": {\"type\": \"array\"},",
+									"            }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"subject_type\":1,\"name\":\"{{visitor_name}}\",\"phone\":\"{{visitor_phone}}\",\"purpose\":{{purpose}},\"come_from\":\"{{come_from}}\",\"proposer\":\"{{proposer}}\",\"interviewee\":\"{{interviewee}}\",\"interviewee_phone\":\"{{interviewee_phone}}\",\"start_time\":{{start_time}},\"end_time\":{{end_time}}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/subject",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"subject"
+							],
+							"query": [
+								{
+									"key": "_t",
+									"value": "1622542048",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "查询访客申请记录-确认刚才的申请成功",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//pm.environment.set(\"visitor_name\", \"访客1\"); ",
+									"//pm.environment.set(\"visitor_phone\", \"13511111111\"); ",
+									"//pm.environment.set(\"purpose\", 1); ",
+									"//pm.environment.set(\"come_from\", \"杭州xxxx有限公司\"); ",
+									"//pm.environment.set(\"proposer\", \"13355780752\"); ",
+									"//pm.environment.set(\"interviewee\", \"雷振林\"); ",
+									"//pm.environment.set(\"interviewee_phone\", \"13355780752\"); ",
+									"//pm.environment.set(\"start_time\", 1625446800); ",
+									"//pm.environment.set(\"end_time\", 1625475600); ",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    // 确认新申请的申请记录存在",
+									"   // data is array",
+									"    pm.expect(jsonData.data instanceof  Array);",
+									"",
+									"    // 返回列表逆序排序的，所以第一条应该就是刚申请的记录",
+									"    pm.expect(jsonData.data[0].name).to.eql(pm.environment.get(\"visitor_name\"));",
+									"    pm.expect(jsonData.data[0].phone).to.eql(pm.environment.get(\"visitor_phone\"));",
+									"    pm.expect(jsonData.data[0].purpose).to.eql(pm.environment.get(\"purpose\"));",
+									"    pm.expect(jsonData.data[0].come_from).to.eql(pm.environment.get(\"come_from\"));",
+									"    pm.expect(jsonData.data[0].proposer).to.eql(pm.environment.get(\"proposer\"));",
+									"    pm.expect(jsonData.data[0].interviewee).to.eql(pm.environment.get(\"interviewee\"));",
+									"    pm.expect(jsonData.data[0].interviewee_phone).to.eql(pm.environment.get(\"interviewee_phone\"));",
+									"    pm.expect(jsonData.data[0].start_time).to.eql(pm.environment.get(\"start_time\"));",
+									"    pm.expect(jsonData.data[0].end_time).to.eql(pm.environment.get(\"end_time\"));",
+									"",
+									"});",
+									"",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"          \"type\": \"array\",",
+									"          \"items\": {",
+									"           //\"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"is_auth\", \"signin_time\", \"qrcode\",\"qrcode_img_url\"],",
+									"            \"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"is_auth\"],",
+									"             \"properties\":{",
+									"                \"id\": {\"type\": \"integer\"},",
+									"                \"subject_id\": {\"type\": \"integer\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"phone\": {\"type\": \"string\"},",
+									"                \"purpose\":  {\"type\": \"integer\"},",
+									"                \"come_from\": {\"type\": \"string\"},",
+									"                \"proposer\": {\"type\": \"string\"},",
+									"                \"interviewee\": {\"type\": \"string\"},",
+									"                \"interviewee_phone\": {\"type\": \"string\"},",
+									"                \"start_time\": {\"type\": \"integer\"},",
+									"                \"end_time\": {\"type\": \"integer\"},",
+									"                \"is_auth\": {\"type\": \"integer\"},",
+									"                \"signin_time\": {\"type\": \"integer\"},",
+									"                \"qrcode\": {\"type\": \"string\"},",
+									"                \"qrcode_img_url\": {\"type\": \"string\"},",
+									"                \"retinues\": {",
+									"                    \"type\": \"array\",",
+									"                    \"items\": {",
+									"                        //\"required\": [\"name\", \"phone\",\"qrcode\", \"qrcode_img_url\"],",
+									"                        \"properties\":{",
+									"                            \"name\": {\"type\": \"string\"},",
+									"                            \"phone\": {\"type\": \"string\"},",
+									"                            \"qrcode\": {\"type\": \"string\"},",
+									"                            \"qrcode_img_url\": {\"type\": \"string\"},",
+									"                        },",
+									"                    }",
+									"                }",
+									"            }",
+									"          }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/visit/records?proposer={{proposer}}",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"visit",
+								"records"
+							],
+							"query": [
+								{
+									"key": "proposer",
+									"value": "{{proposer}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "访客自行申请-无随行人员",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"visitor_name\", \"访客2\"); ",
+									"pm.environment.set(\"visitor_phone\", \"13511111111\"); ",
+									"pm.environment.set(\"purpose\", 1); ",
+									"pm.environment.set(\"come_from\", \"上海xxxx有限公司\"); ",
+									"pm.environment.set(\"proposer\", \"13355780752\"); ",
+									"pm.environment.set(\"interviewee\", \"雷振林\"); ",
+									"pm.environment.set(\"interviewee_phone\", \"13355780752\"); ",
+									"pm.environment.set(\"start_time\", 1625446800); ",
+									"pm.environment.set(\"end_time\", 1625475600); ",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.data.name).to.eql(pm.environment.get(\"visitor_name\"));",
+									"    pm.expect(jsonData.data.phone).to.eql(pm.environment.get(\"visitor_phone\"));",
+									"    pm.expect(jsonData.data.purpose).to.eql(pm.environment.get(\"purpose\"));",
+									"    pm.expect(jsonData.data.come_from).to.eql(pm.environment.get(\"come_from\"));",
+									"    pm.expect(jsonData.data.proposer).to.eql(pm.environment.get(\"proposer\"));",
+									"    pm.expect(jsonData.data.interviewee).to.eql(pm.environment.get(\"interviewee\"));",
+									"    pm.expect(jsonData.data.interviewee_phone).to.eql(pm.environment.get(\"interviewee_phone\"));",
+									"    pm.expect(jsonData.data.start_time).to.eql(pm.environment.get(\"start_time\"));",
+									"    pm.expect(jsonData.data.end_time).to.eql(pm.environment.get(\"end_time\"));",
+									"",
+									"    // 后台的部分数据先保存起来，给后面的接口用",
+									"    pm.environment.set(\"record_id\", jsonData.data.id);  // 访客申请记录id",
+									"    pm.environment.set(\"visitor_id\", jsonData.data.subject_id);  // 访客申请记录id",
+									"});",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"             \"type\": \"object\",",
+									"            \"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"retinues\"],",
+									"             \"properties\":{",
+									"                \"id\": {\"type\": \"integer\"},",
+									"                \"subject_id\": {\"type\": \"integer\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"phone\": {\"type\": \"string\"},",
+									"                \"purpose\":  {\"type\": \"integer\"},",
+									"                \"come_from\": {\"type\": \"string\"},",
+									"                \"proposer\": {\"type\": \"string\"},",
+									"                \"interviewee\": {\"type\": \"string\"},",
+									"                \"interviewee_phone\": {\"type\": \"string\"},",
+									"                \"start_time\": {\"type\": \"integer\"},",
+									"                \"end_time\": {\"type\": \"integer\"},",
+									"                \"retinues\": {\"type\": \"array\"},",
+									"            }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"subject_type\":1,\"name\":\"{{visitor_name}}\",\"phone\":\"{{visitor_phone}}\",\"purpose\":{{purpose}},\"come_from\":\"{{come_from}}\",\"proposer\":\"{{visitor_phone}}\",\"interviewee\":\"{{interviewee}}\",\"interviewee_phone\":\"{{interviewee_phone}}\",\"start_time\":{{start_time}},\"end_time\":{{end_time}}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/subject",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"subject"
+							],
+							"query": [
+								{
+									"key": "_t",
+									"value": "1622542048",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "查询访客申请记录-确认刚才的申请成功",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//pm.environment.set(\"visitor_name\", \"访客1\"); ",
+									"//pm.environment.set(\"visitor_phone\", \"13511111111\"); ",
+									"//pm.environment.set(\"purpose\", 1); ",
+									"//pm.environment.set(\"come_from\", \"杭州xxxx有限公司\"); ",
+									"//pm.environment.set(\"proposer\", \"13355780752\"); ",
+									"//pm.environment.set(\"interviewee\", \"雷振林\"); ",
+									"//pm.environment.set(\"interviewee_phone\", \"13355780752\"); ",
+									"//pm.environment.set(\"start_time\", 1625446800); ",
+									"//pm.environment.set(\"end_time\", 1625475600); ",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    // 确认新申请的申请记录存在",
+									"   // data is array",
+									"    pm.expect(jsonData.data instanceof  Array);",
+									"",
+									"    // 返回列表逆序排序的，所以第一条应该就是刚申请的记录",
+									"    pm.expect(jsonData.data[0].name).to.eql(pm.environment.get(\"visitor_name\"));",
+									"    pm.expect(jsonData.data[0].phone).to.eql(pm.environment.get(\"visitor_phone\"));",
+									"    pm.expect(jsonData.data[0].purpose).to.eql(pm.environment.get(\"purpose\"));",
+									"    pm.expect(jsonData.data[0].come_from).to.eql(pm.environment.get(\"come_from\"));",
+									"    pm.expect(jsonData.data[0].proposer).to.eql(pm.environment.get(\"proposer\"));",
+									"    pm.expect(jsonData.data[0].interviewee).to.eql(pm.environment.get(\"interviewee\"));",
+									"    pm.expect(jsonData.data[0].interviewee_phone).to.eql(pm.environment.get(\"interviewee_phone\"));",
+									"    pm.expect(jsonData.data[0].start_time).to.eql(pm.environment.get(\"start_time\"));",
+									"    pm.expect(jsonData.data[0].end_time).to.eql(pm.environment.get(\"end_time\"));",
+									"",
+									"});",
+									"",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"          \"type\": \"array\",",
+									"          \"items\": {",
+									"           //\"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"is_auth\", \"signin_time\", \"qrcode\",\"qrcode_img_url\"],",
+									"            \"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"is_auth\"],",
+									"             \"properties\":{",
+									"                \"id\": {\"type\": \"integer\"},",
+									"                \"subject_id\": {\"type\": \"integer\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"phone\": {\"type\": \"string\"},",
+									"                \"purpose\":  {\"type\": \"integer\"},",
+									"                \"come_from\": {\"type\": \"string\"},",
+									"                \"proposer\": {\"type\": \"string\"},",
+									"                \"interviewee\": {\"type\": \"string\"},",
+									"                \"interviewee_phone\": {\"type\": \"string\"},",
+									"                \"start_time\": {\"type\": \"integer\"},",
+									"                \"end_time\": {\"type\": \"integer\"},",
+									"                \"is_auth\": {\"type\": \"integer\"},",
+									"                \"signin_time\": {\"type\": \"integer\"},",
+									"                \"qrcode\": {\"type\": \"string\"},",
+									"                \"qrcode_img_url\": {\"type\": \"string\"},",
+									"                \"retinues\": {",
+									"                    \"type\": \"array\",",
+									"                    \"items\": {",
+									"                        //\"required\": [\"name\", \"phone\",\"qrcode\", \"qrcode_img_url\"],",
+									"                        \"properties\":{",
+									"                            \"name\": {\"type\": \"string\"},",
+									"                            \"phone\": {\"type\": \"string\"},",
+									"                            \"qrcode\": {\"type\": \"string\"},",
+									"                            \"qrcode_img_url\": {\"type\": \"string\"},",
+									"                        },",
+									"                    }",
+									"                }",
+									"            }",
+									"          }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/visit/records?proposer={{visitor_phone}}",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"visit",
+								"records"
+							],
+							"query": [
+								{
+									"key": "proposer",
+									"value": "{{visitor_phone}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "员工查询授权记录",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//pm.environment.set(\"visitor_name\", \"访客1\"); ",
+									"//pm.environment.set(\"visitor_phone\", \"13511111111\"); ",
+									"//pm.environment.set(\"purpose\", 1); ",
+									"//pm.environment.set(\"come_from\", \"杭州xxxx有限公司\"); ",
+									"//pm.environment.set(\"proposer\", \"13355780752\"); ",
+									"//pm.environment.set(\"interviewee\", \"雷振林\"); ",
+									"pm.environment.set(\"interviewee_phone\", \"13355780752\"); ",
+									"//pm.environment.set(\"start_time\", 1625446800); ",
+									"//pm.environment.set(\"end_time\", 1625475600); ",
+									"pm.environment.set(\"page\", 1); ",
+									"pm.environment.set(\"size\", 5); ",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"   // data is array",
+									"    pm.expect(jsonData.data instanceof  Array);",
+									"",
+									"    // 返回列表逆序排序的，所以第一条应该就是刚申请的记录，授权状态为\"已授权\"",
+									"    pm.expect(jsonData.data[0].name).to.eql(pm.environment.get(\"visitor_name\"));",
+									"    pm.expect(jsonData.data[0].phone).to.eql(pm.environment.get(\"visitor_phone\"));",
+									"    pm.expect(jsonData.data[0].purpose).to.eql(pm.environment.get(\"purpose\"));",
+									"    pm.expect(jsonData.data[0].come_from).to.eql(pm.environment.get(\"come_from\"));",
+									"    pm.expect(jsonData.data[0].proposer).to.eql(pm.environment.get(\"proposer\"));",
+									"    pm.expect(jsonData.data[0].interviewee).to.eql(pm.environment.get(\"interviewee\"));",
+									"    pm.expect(jsonData.data[0].interviewee_phone).to.eql(pm.environment.get(\"interviewee_phone\"));",
+									"    pm.expect(jsonData.data[0].start_time).to.eql(pm.environment.get(\"start_time\"));",
+									"    pm.expect(jsonData.data[0].end_time).to.eql(pm.environment.get(\"end_time\"));",
+									"    pm.expect(jsonData.data[0].is_auth).to.eql(1);  // 已授权",
+									"",
+									"});",
+									"",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"          \"type\": \"array\",",
+									"          \"items\": {",
+									"           //\"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"is_auth\", \"signin_time\", \"qrcode\",\"qrcode_img_url\"],",
+									"            \"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"is_auth\"],",
+									"             \"properties\":{",
+									"                \"id\": {\"type\": \"integer\"},",
+									"                \"subject_id\": {\"type\": \"integer\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"phone\": {\"type\": \"string\"},",
+									"                \"purpose\":  {\"type\": \"integer\"},",
+									"                \"come_from\": {\"type\": \"string\"},",
+									"                \"proposer\": {\"type\": \"string\"},",
+									"                \"interviewee\": {\"type\": \"string\"},",
+									"                \"interviewee_phone\": {\"type\": \"string\"},",
+									"                \"start_time\": {\"type\": \"integer\"},",
+									"                \"end_time\": {\"type\": \"integer\"},",
+									"                \"is_auth\": {\"type\": \"integer\"},",
+									"                \"signin_time\": {\"type\": \"integer\"},",
+									"                \"qrcode\": {\"type\": \"string\"},",
+									"                \"qrcode_img_url\": {\"type\": \"string\"},",
+									"                \"retinues\": {",
+									"                    \"type\": \"array\",",
+									"                    \"items\": {",
+									"                        //\"required\": [\"name\", \"phone\",\"qrcode\", \"qrcode_img_url\"],",
+									"                        \"properties\":{",
+									"                            \"name\": {\"type\": \"string\"},",
+									"                            \"phone\": {\"type\": \"string\"},",
+									"                            \"qrcode\": {\"type\": \"string\"},",
+									"                            \"qrcode_img_url\": {\"type\": \"string\"},",
+									"                        },",
+									"                    }",
+									"                }",
+									"            }",
+									"          }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/auth/records?phone={{interviewee_phone}}",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"records"
+							],
+							"query": [
+								{
+									"key": "phone",
+									"value": "{{interviewee_phone}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "访客申请-员工邀约-1位随行人员",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"visitor_name\", \"访客1\"); ",
+									"pm.environment.set(\"visitor_phone\", \"13511111111\"); ",
+									"pm.environment.set(\"purpose\", 1); ",
+									"pm.environment.set(\"come_from\", \"杭州xxxx有限公司\"); ",
+									"pm.environment.set(\"proposer\", \"13355780752\"); ",
+									"pm.environment.set(\"interviewee\", \"雷振林\"); ",
+									"pm.environment.set(\"interviewee_phone\", \"13355780752\"); ",
+									"pm.environment.set(\"start_time\", 1625446800); ",
+									"pm.environment.set(\"end_time\", 1625475600); ",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code and err_msg is ok\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    pm.expect(jsonData.err_msg).to.eql(\"\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"data is ok\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.expect(jsonData.data.name).to.eql(pm.environment.get(\"visitor_name\"));",
+									"    pm.expect(jsonData.data.phone).to.eql(pm.environment.get(\"visitor_phone\"));",
+									"    pm.expect(jsonData.data.purpose).to.eql(pm.environment.get(\"purpose\"));",
+									"    pm.expect(jsonData.data.come_from).to.eql(pm.environment.get(\"come_from\"));",
+									"    pm.expect(jsonData.data.proposer).to.eql(pm.environment.get(\"proposer\"));",
+									"    pm.expect(jsonData.data.interviewee).to.eql(pm.environment.get(\"interviewee\"));",
+									"    pm.expect(jsonData.data.interviewee_phone).to.eql(pm.environment.get(\"interviewee_phone\"));",
+									"    pm.expect(jsonData.data.start_time).to.eql(pm.environment.get(\"start_time\"));",
+									"    pm.expect(jsonData.data.end_time).to.eql(pm.environment.get(\"end_time\"));",
+									"",
+									"    // 后台的部分数据先保存起来，给后面的接口用",
+									"    pm.environment.set(\"record_id\", jsonData.data.id);  // 访客申请记录id",
+									"    pm.environment.set(\"visitor_id\", jsonData.data.subject_id);  // 访客申请记录id",
+									"});",
+									"",
+									"var schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"code\", \"err_msg\",\"data\"],",
+									"    \"properties\":{",
+									"        \"code\": {\"type\": \"integer\"},",
+									"        \"err_msg\": {\"type\": \"string\"},",
+									"       \"data\": {",
+									"             \"type\": \"object\",",
+									"            \"required\":[\"id\", \"subject_id\",\"name\",\"phone\", \"purpose\", \"come_from\", \"proposer\", \"interviewee\", \"interviewee_phone\", \"start_time\", \"end_time\", \"retinues\"],",
+									"             \"properties\":{",
+									"                \"id\": {\"type\": \"integer\"},",
+									"                \"subject_id\": {\"type\": \"integer\"},",
+									"                \"name\": {\"type\": \"string\"},",
+									"                \"phone\": {\"type\": \"string\"},",
+									"                \"purpose\":  {\"type\": \"integer\"},",
+									"                \"come_from\": {\"type\": \"string\"},",
+									"                \"proposer\": {\"type\": \"string\"},",
+									"                \"interviewee\": {\"type\": \"string\"},",
+									"                \"interviewee_phone\": {\"type\": \"string\"},",
+									"                \"start_time\": {\"type\": \"integer\"},",
+									"                \"end_time\": {\"type\": \"integer\"},",
+									"                \"retinues\": {",
+									"                    \"type\": \"array\",",
+									"                    \"items\": {",
+									"                        \"required\": [\"name\", \"phone\"],",
+									"                        \"properties\":{",
+									"                            \"name\": {\"type\": \"string\"},",
+									"                            \"phone\": {\"type\": \"string\"},",
+									"                        }",
+									"                    }",
+									"                },",
+									"            }",
+									"        }",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response Schema is valid', function() {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"subject_type\":1,\"name\":\"{{visitor_name}}\",\"phone\":\"{{visitor_phone}}\",\"purpose\":{{purpose}},\"come_from\":\"{{come_from}}\",\"proposer\":\"{{proposer}}\",\"interviewee\":\"{{interviewee}}\",\"interviewee_phone\":\"{{interviewee_phone}}\",\"start_time\":{{start_time}},\"end_time\":{{end_time}}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/v1/subject",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"v1",
+								"subject"
+							],
+							"query": [
+								{
+									"key": "_t",
+									"value": "1622542048",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
