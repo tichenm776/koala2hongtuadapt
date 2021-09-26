@@ -24,8 +24,15 @@ type PhotoShip struct {
 type GroupShip struct {
 	ID   int    `gorm:"primary_key:AUTO_INCREMENT;column:id;not null" json:"subject_id"`
 	Uuid string `gorm:"column:uuid;index:idx_uuid" json:"uuid"` //2021.5.30被访人手机号码
-	Type string `gorm:"column:type;index:idx_type" json:"type"` //2021.5.30被访人手机号码
+	Type int `gorm:"column:type;index:idx_type" json:"type"` //2021.5.30被访人手机号码
 	Name string `gorm:"column:name;index:idx_name" json:"name"` //2021.5.30被访人手机号码
+	//SubjectUuid string `gorm:"column:subject_uuid;index:idx_subject_uuid" json:"-"`
+}
+type GroupSubjectShip struct {
+	ID   int    `gorm:"primary_key:AUTO_INCREMENT;column:id;not null" json:"subject_id"`
+	Uuid string `gorm:"column:uuid;index:idx_uuid" json:"uuid"` //2021.5.30被访人手机号码
+	//Type string `gorm:"column:type;index:idx_type" json:"type"` //2021.5.30被访人手机号码
+	//Name string `gorm:"column:name;index:idx_name" json:"name"` //2021.5.30被访人手机号码
 	SubjectUuid string `gorm:"column:subject_uuid;index:idx_subject_uuid" json:"-"`
 }
 

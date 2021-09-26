@@ -13,6 +13,11 @@ var G_map_SubjectsLocal = Demo{
 	Lock: &sync.Mutex{},
 	RLock:&sync.RWMutex{},
 }
+var G_map = Demo{
+	Data: make(map[string]interface{},0),
+	Lock: &sync.Mutex{},
+	RLock:&sync.RWMutex{},
+}
 
 var G_map_GroupsLocal = Demo{
 	Data: make(map[string]interface{},0),

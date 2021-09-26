@@ -5,14 +5,18 @@ import (
 	"encoding/json"
 	"github.com/alecthomas/log4go"
 	"github.com/gin-gonic/gin"
+	"github.com/zhenorzz/snowflake"
 	client "go-common/app/service/main/vip/dao/ele-api-client"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
+	"zhiyuan/koala2hongtuadapt/dao"
+	hongtu2 "zhiyuan/koala2hongtuadapt/hongtu"
 	"zhiyuan/koala2hongtuadapt/model"
+	"zhiyuan/koala2hongtuadapt/server"
 	"zhiyuan/koala2hongtuadapt/util"
 	hongtu "zhiyuan/koala_api_go/hongtu_api"
-	hongtu2 "zhiyuan/koala2hongtuadapt/hongtu"
 	koala "zhiyuan/koala_api_go/koala_api"
 	"zhiyuan/zyutil/config"
 )
@@ -101,6 +105,18 @@ func LoginIn(c *gin.Context) {
 }
 var Purpose_map = map[int]string{0:"其他",1:"面试",2:"商务",3:"亲友",4:"快递送货"}
 
+func  CreateID()int{
+	sf, err := snowflake.New(1)
+	if err != nil {
+		panic(err)
+	}
+	uuid,_ := sf.Generate()
+	str_uuid := strconv.FormatUint(uuid, 10)
+	//fmt.Println(str_uuid)
+	value ,_ := strconv.Atoi(str_uuid)
+	return value
+}
+
 func AddPerson(c *gin.Context){
 	resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
 	subject :=	model.Subject{}
@@ -175,8 +191,26 @@ func AddPerson(c *gin.Context){
 
 func AuthLogin(c *gin.Context){
 
+
+
+
+	//log4go.Info(c.Request)
+	////log4go.Info(c)
+	//body, _ := ioutil.ReadAll(c.Request.Body)
+	//m := make(map[string]interface{}, 0)
+	//err := json.Unmarshal(body, &m)
+	//if err != nil {
+	//	//fmt.Println(err)
+	//	log4go.Error("ShouldBind err", err)
+	//	c.JSON(http.StatusOK, gin.H{
+	//		"code":    -200,
+	//		"err_msg": "无请求参数或请求参数有误!",
+	//	})
+	//	return
+	//}
+	//log4go.Info(m)
 	loginparams := model.Login{}
-	err := c.BindJSON(&loginparams)
+	err := c.Bind(&loginparams)
 	if err != nil{
 		c.JSON(200, util.Err(-1019,"账号或密码错误",err))
 		return
@@ -252,4 +286,203 @@ func GetEmployeeList(c *gin.Context){
 }
 
 
+func Compare(c *gin.Context){
+
+
+	json_return := `{"face_info_1":{"rect":{"left":87,"top":109,"right":262,"bottom":283},"quality":0.9955986086279154,"brightness":116.19357429718876,"std_deviation":28.79753933868924},"face_info_2":{"rect":{"left":87,"top":109,"right":262,"bottom":283},"quality":0.9955986086279154,"brightness":116.19357429718876,"std_deviation":28.79753933868924},"same":true,"score":98.16325378417969,"thresholds":{"E3":41.35199737548828,"E4":48.90372848510742,"E5":55.6849365234375,"E6":62.1713752746582,"recognizing":68,"stranger":67,"verify":68,"gate":78}}`
+	json_data := make(map[string]interface{},0)
+	json.Unmarshal([]byte(json_return),&json_data)
+	c.JSON(http.StatusOK, json_data)
+
+}
+
+func Subjectsgrouplist(c *gin.Context){
+	resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
+	data := make([]map[string]interface{},0)
+	//json_return := `{"code":0,"data":[{"comment":"floor_15\u8bbf\u5ba2\u7ec4","id":99,"name":"floor_15\u8bbf\u5ba2\u7ec4","subject_count":1,"subject_type":1,"update_by":"admin@91zo.com","update_time":1632282494.0},{"comment":"2\u697c\u8bbf\u5ba2\u7ec4","id":97,"name":"2\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630893529.0},{"comment":"3F\u8bbf\u5ba2\u7ec4","id":95,"name":"3F\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630639023.0},{"comment":"1\u697c\u8bbf\u5ba2\u7ec4","id":89,"name":"1\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630544330.0},{"comment":"floor_20\u8bbf\u5ba2\u7ec4","id":17,"name":"floor_20\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1629269644.0}],"page":{"count":5,"current":1,"size":10,"total":1},"timecost":55}`
+
+
+	//json_data := make(map[string]interface{},0)
+	//json.Unmarshal([]byte(json_return),&json_data)
+
+	//log4go.Info(json_data["data"].([]interface{})[0])
+
+
+	//temp_map := make(map[string]interface{},0)
+	//temp_map["type"] = 1
+	//temp_map["pageNum"] = 1
+	//temp_map["pageSize"] = 10000
+	Passgrouplist,err := dao.FindGroupShip("")
+	//Passgrouplist,err := hongtu2.GetGroupsHongtuList(temp_map)
+	if err != nil{
+		resp4Device.Code = -100
+		resp4Device.Err_msg = "查询失败"+err.Error()
+		log4go.Error(resp4Device.Err_msg)
+		//return model.Visitor{}, errors.New(resp4Device.Err_msg)
+		c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+		return
+	}
+
+	json_return := `{"comment":"floor_15\u8bbf\u5ba2\u7ec4","id":99,"name":"floor_15\u8bbf\u5ba2\u7ec4","subject_count":1,"subject_type":1,"update_by":"admin@91zo.com","update_time":1632282494.0}`
+
+	json_data := make(map[string]interface{},0)
+	json.Unmarshal([]byte(json_return),&json_data)
+
+	if len(Passgrouplist) > 0{
+		for k,_ := range Passgrouplist{
+			temp := json_data
+			temp["comment"] = Passgrouplist[k].Name
+			temp["id"] = Passgrouplist[k].ID
+			temp["name"] = Passgrouplist[k].Name
+			data = append(data,temp)
+		}
+
+	}
+	go func() {
+		GetGroupsHongtu()
+	}()
+
+	//c.JSON(http.StatusOK, json_data)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"err_msg": "",
+		"data":    data,
+		"page":map[string]interface{}{},
+	})
+}
+
+
+func GetGroupsHongtu_value(HongtuGroup map[string]interface{}){
+
+	uuid := ""
+	Name := ""
+	typevalue := 2
+	personTotal := -1
+	if value,ok := HongtuGroup["uuid"].(string);ok{
+		uuid = value
+	}
+	if uuid == ""{
+		log4go.Error("错误数据:",HongtuGroup)
+		//continue
+	}
+	Group := util.G_map_GroupsLocal.Get(uuid)
+	if Group !=nil{
+		if groupvalue,ok := Group.(map[string]interface{});ok{
+			if groupvalue["name"] == HongtuGroup["name"]{
+				log4go.Info("equal")
+			}else{
+				log4go.Info("update name")
+				dao.UpdateGroupShip(uuid, map[string]interface{}{
+					"name":HongtuGroup["name"],
+				})
+			}
+		}
+	}else{
+		if value,ok := HongtuGroup["type"].(int);ok{
+			typevalue = value
+		}
+		if value,ok := HongtuGroup["name"].(string);ok{
+			Name = value
+		}
+		if value,ok := HongtuGroup["personTotal"].(int);ok{
+			personTotal = value
+		}
+		addgroupship := model.GroupShip{
+			Uuid:uuid,
+			Type:typevalue,
+			Name:Name,
+		}
+		valuereturn,err := dao.CreateGroupShip(&addgroupship)
+		if err != nil{
+			log4go.Error("添加失败:",err)
+			//continue
+		}
+		temp_map := make(map[string]interface{})
+		temp_map["id"]=valuereturn.ID
+		temp_map["comment"]=valuereturn.Name
+		temp_map["Uuid"]=valuereturn.Uuid
+		temp_map["name"]=valuereturn.Name
+		temp_map["subject_count"]=personTotal
+		temp_map["subject_type"]=1
+		temp_map["update_by"]="admin@91zo.com"
+		temp_map["update_time"]=1632282494.0
+		temp_map["type"]=valuereturn.Type
+		temp_map["datatype"]="local"
+		util.G_map_GroupsLocal.Set(uuid,temp_map)
+	}
+
+}
+
+func AddPhoto(c *gin.Context){
+	//resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
+	_, header, err1 := c.Request.FormFile("photo")
+	if err1 != nil{
+		log4go.Error("获取照片文件失败:",err1)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0,
+			"err_msg": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	//resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
+	//data := make([]map[string]interface{},0)
+	//json_return := `{"code":0,"data":[{"comment":"floor_15\u8bbf\u5ba2\u7ec4","id":99,"name":"floor_15\u8bbf\u5ba2\u7ec4","subject_count":1,"subject_type":1,"update_by":"admin@91zo.com","update_time":1632282494.0},{"comment":"2\u697c\u8bbf\u5ba2\u7ec4","id":97,"name":"2\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630893529.0},{"comment":"3F\u8bbf\u5ba2\u7ec4","id":95,"name":"3F\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630639023.0},{"comment":"1\u697c\u8bbf\u5ba2\u7ec4","id":89,"name":"1\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630544330.0},{"comment":"floor_20\u8bbf\u5ba2\u7ec4","id":17,"name":"floor_20\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1629269644.0}],"page":{"count":5,"current":1,"size":10,"total":1},"timecost":55}`
+	json_return := `{"company_id":1,"id":123,"origin_url":"/static/upload/origin/2021-09-26/v2_4b4b6a8f681d68254427e80506426b6aaf68a86c.jpg","quality":null,"subject_id":null,"url":"/static/upload/photo/2021-09-26/v2_a94965c0110044ae16350644f047b517e8f13162.jpg","version":7}`
+
+	json_data := make(map[string]interface{},0)
+	json.Unmarshal([]byte(json_return),&json_data)
+	photo,err :=header.Open()
+	if err != nil{
+		log4go.Error("获取照片文件失败:",err)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0,
+			"err_msg": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	data_return,err := hongtu.AddPhoto(photo)
+	if err != nil{
+		log4go.Error("添加照片失败:",err)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"err_msg": "添加照片失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	log4go.Info(data_return)
+	uri,err := data_return.Get("data").Get("uri").String()
+	if err != nil{
+		log4go.Error("获取照片uri失败:",err)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"err_msg": "获取照片uri失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+
+	photoship ,err := server.AddPhotoShip(uri)
+	if err != nil{
+		log4go.Error("存储uri失败:",err)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"err_msg": "存储uri失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+
+	json_data["id"] = photoship.ID
+
+	//c.JSON(http.StatusOK, json_data)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"err_msg": "",
+		"data":    json_data,
+		"page":map[string]interface{}{},
+	})
+}
 

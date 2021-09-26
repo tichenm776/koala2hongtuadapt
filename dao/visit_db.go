@@ -591,7 +591,19 @@ func FindGroupShip(uuid string) (GroupShip []model.GroupShip, err error) {
 	}
 	return GroupShip, nil
 }
+func UpdateGroupShip(uuid string,updateparams map[string]interface{}) ( err error) {
 
+	Dbdata := Db.Debug()
+	//GroupShip := model.GroupShip{}
+	//if uuid != ""{
+		Dbdata.Where("subject_uuid = ?",uuid)
+	//}
+	if err := Dbdata.Table("group_ship").Where("subject_uuid = ?",uuid).Updates(&updateparams); err.Error != nil {
+		log4go.Error(err)
+		return  errors.New("select all employee  err")
+	}
+	return  nil
+}
 func FindPhotoShip(uuid string) (PhotoShip []model.PhotoShip, err error) {
 
 	Dbdata := Db.Debug()

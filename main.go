@@ -18,15 +18,17 @@ func main() {
 	//	log4go.LoadConfiguration("./log4wechatservice.xml")
 	//}
 
+	config.Init("conf.yaml")
+
 	err := db.New()
 	if err != nil {
 		log4go.Error(err.Error())
 		fmt.Println(err.Error())
 		return
 	}
-	config.Init("conf.yaml")
 	//go util.G_map.CronDelete(600)
 	//http.ListenAndServe(":7300", r)
+	//http_api.New(strconv.Itoa(config.Gconf.ServerPort_theme))
 	http_api.New(strconv.Itoa(config.Gconf.ServerPort_theme))
 	//http_api.New("9010")
 

@@ -28,6 +28,7 @@ import (
 func New(port string) {
 	go func() {
 		koalainit()
+
 		//TemplateIdInit()
 	}()
 
@@ -49,6 +50,7 @@ func koalainit ()bool{
 	koalalogin := KoalaLogin() //2021.5.28 临时注释
 	if koalalogin {
 		//go	Identify_Init(config.Gconf.KoalaHost,config.Gconf.KoalaUsername,config.Gconf.KoalaPassword)
+		InitValue()
 		return koalalogin
 	}else {
 		time.Sleep(30*time.Second)
@@ -57,7 +59,10 @@ func koalainit ()bool{
 
 }
 
-
+func InitValue()  {
+	GetGroupsLocal()
+	GetGroupsHongtu()
+}
 
 func Identify_Init(koala_host,koala_username,koala_password string)(){
 
@@ -93,26 +98,240 @@ func Identify_Init(koala_host,koala_username,koala_password string)(){
 
 
 func GetSubjectsLocal(){
-	dao.FindSubjectShip("")
+	subjects,err := dao.FindSubjectShip("")
+	if err != nil{
+		if strings.Index(err.Error(),"not found") != -1{
+
+		}else{
+			log4go.Error("查询本地人员失败:",err)
+			return
+		}
+	}
+	for k,_ := range subjects{
+		subject := util.G_map_SubjectsLocal.Get(subjects[k].Uuid)
+		if subject !=nil{
+			continue
+		}else{
+			temp_map := make(map[string]interface{})
+			temp_map["subject_id"]=subjects[k].ID
+			temp_map["uuid"]=subjects[k].Uuid
+			temp_map["uri"]=subjects[k].Uri
+			temp_map["name"]=subjects[k].Name
+			temp_map["phone"]=subjects[k].Phone
+			temp_map["visitType"]=subjects[k].VisitType
+			temp_map["identifyNum"]=subjects[k].IdentifyNum
+			temp_map["datatype"]="local"
+			util.G_map_SubjectsLocal.Set(subjects[k].Uuid,temp_map)
+		}
+
+	}
+
 }
 
 func GetSubjectsHongtu(){
-	hongtu.GetEmployeeList("")
+	subjects,err := hongtu.GetEmployeeList("")
+	if err != nil{
+		log4go.Error("查询本地人员失败:",err)
+		return
+	}
+	if len(subjects) > 0{
+		for k,_ := range subjects{
+			uuid := ""
+			if value,ok := subjects[k]["uuid"].(string);ok{
+				uuid = value
+			}
+			subject := util.G_map_SubjectsLocal.Get(uuid)
+			if subject !=nil{
+
+
+				continue
+			}else{
+				//temp_map := make(map[string]interface{})
+				//temp_map["subject_id"]=subjects[k].ID
+				//temp_map["uuid"]=subjects[k].Uuid
+				//temp_map["uri"]=subjects[k].Uri
+				//temp_map["name"]=subjects[k].Name
+				//temp_map["phone"]=subjects[k].Phone
+				//temp_map["visitType"]=subjects[k].VisitType
+				//temp_map["identifyNum"]=subjects[k].IdentifyNum
+				//util.G_map_SubjectsLocal.Set(subjects[k].Uuid,temp_map)
+			}
+
+		}
+	}
+
 }
 
 func GetGroupsLocal(){
-	dao.FindGroupShip("")
+	groups,err := dao.FindGroupShip("")
+	if err != nil{
+		if strings.Index(err.Error(),"not found") != -1{
+			return
+		}else{
+			log4go.Error("查询本地人员失败:",err)
+			return
+		}
+	}
+	//`{"comment":"floor_15\u8bbf\u5ba2\u7ec4","id":99,"name":"floor_15\u8bbf\u5ba2\u7ec4","subject_count":1,"subject_type":1,"update_by":"admin@91zo.com","update_time":1632282494.0}`
+
+	for k,_ := range groups{
+		subject := util.G_map_SubjectsLocal.Get(groups[k].Uuid)
+		if subject !=nil{
+			continue
+		}else{
+			temp_map := make(map[string]interface{})
+			temp_map["id"]=groups[k].ID
+			temp_map["comment"]=groups[k].Name
+			temp_map["Uuid"]=groups[k].Uuid
+			temp_map["name"]=groups[k].Name
+			temp_map["subject_count"]=1
+			temp_map["subject_type"]=1
+			temp_map["update_by"]="admin@91zo.com"
+			temp_map["update_time"]=1632282494.0
+			temp_map["type"]=groups[k].Type
+			temp_map["datatype"]="local"
+			util.G_map_GroupsLocal.Set(groups[k].Uuid,temp_map)
+		}
+
+	}
 }
 
 func GetGroupsHongtu(){
 	temp_map := make(map[string]interface{},0)
-	temp_map["type"] = 1
+	temp_map["type"] = 2
 	temp_map["pageNum"] = 1
-	temp_map["pageSize"] = 10000
-	hongtu.GetGroupsHongtuList(temp_map)
+	temp_map["pageSize"] = 8000
+	Passgrouplist,err := hongtu.GetGroupsHongtuList(temp_map)
+	if err != nil{
+		log4go.Error("查询失败"+err.Error())
+		return
+	}
+	log4go.Info(Passgrouplist)
+//[isAll:0 name:访客默认组 personTotal:1 type:2 uuid:90a41fddf76a4daa9dae47762ecfd359]
+	if len(Passgrouplist) > 0{
+		for k,_ := range Passgrouplist{
+			log4go.Info("value is",Passgrouplist[k])
+			GetGroupsHongtu_value(Passgrouplist[k])
+			//uuid := ""
+			//Name := ""
+			//typevalue := -1
+			//personTotal := -1
+			//if value,ok := Passgrouplist[k]["uuid"].(string);ok{
+			//	uuid = value
+			//}
+			//if uuid == ""{
+			//	log4go.Error("错误数据:",Passgrouplist[k])
+			//	continue
+			//}
+			//Group := util.G_map_GroupsLocal.Get(uuid)
+			//if Group !=nil{
+			//	if groupvalue,ok := Group.(map[string]interface{});ok{
+			//		if groupvalue["name"] == Passgrouplist[k]["name"]{
+			//			log4go.Info("equal")
+			//		}else{
+			//			log4go.Info("update name")
+			//			dao.UpdateGroupShip(uuid, map[string]interface{}{
+			//				"name":Passgrouplist[k]["name"],
+			//			})
+			//		}
+			//	}
+			//}else{
+			//	if value,ok := Passgrouplist[k]["type"].(int);ok{
+			//		typevalue = value
+			//	}
+			//	if value,ok := Passgrouplist[k]["name"].(string);ok{
+			//		Name = value
+			//	}
+			//	if value,ok := Passgrouplist[k]["personTotal"].(int);ok{
+			//		personTotal = value
+			//	}
+			//	addgroupship := model.GroupShip{
+			//		Uuid:uuid,
+			//		Type:typevalue,
+			//		Name:Name,
+			//	}
+			//	valuereturn,err := dao.CreateGroupShip(&addgroupship)
+			//	if err != nil{
+			//		log4go.Error("添加失败:",err)
+			//		continue
+			//	}
+			//	temp_map := make(map[string]interface{})
+			//	temp_map["id"]=valuereturn.ID
+			//	temp_map["comment"]=valuereturn.Name
+			//	temp_map["Uuid"]=valuereturn.Uuid
+			//	temp_map["name"]=valuereturn.Name
+			//	temp_map["subject_count"]=personTotal
+			//	temp_map["subject_type"]=1
+			//	temp_map["update_by"]="admin@91zo.com"
+			//	temp_map["update_time"]=1632282494.0
+			//	temp_map["type"]=valuereturn.Type
+			//	temp_map["datatype"]="local"
+			//	util.G_map_GroupsLocal.Set(uuid,temp_map)
+			//}
+		}
+	}
 }
 
-
+//func GetGroupsHongtu_value(HongtuGroup map[string]interface{}){
+//
+//	uuid := ""
+//	Name := ""
+//	typevalue := -1
+//	personTotal := -1
+//	if value,ok := HongtuGroup["uuid"].(string);ok{
+//		uuid = value
+//	}
+//	if uuid == ""{
+//		log4go.Error("错误数据:",HongtuGroup)
+//		//continue
+//	}
+//	Group := util.G_map_GroupsLocal.Get(uuid)
+//	if Group !=nil{
+//		if groupvalue,ok := Group.(map[string]interface{});ok{
+//			if groupvalue["name"] == HongtuGroup["name"]{
+//				log4go.Info("equal")
+//			}else{
+//				log4go.Info("update name")
+//				dao.UpdateGroupShip(uuid, map[string]interface{}{
+//					"name":HongtuGroup["name"],
+//				})
+//			}
+//		}
+//	}else{
+//		if value,ok := HongtuGroup["type"].(int);ok{
+//			typevalue = value
+//		}
+//		if value,ok := HongtuGroup["name"].(string);ok{
+//			Name = value
+//		}
+//		if value,ok := HongtuGroup["personTotal"].(int);ok{
+//			personTotal = value
+//		}
+//		addgroupship := model.GroupShip{
+//			Uuid:uuid,
+//			Type:typevalue,
+//			Name:Name,
+//		}
+//		valuereturn,err := dao.CreateGroupShip(&addgroupship)
+//		if err != nil{
+//			log4go.Error("添加失败:",err)
+//			//continue
+//		}
+//		temp_map := make(map[string]interface{})
+//		temp_map["id"]=valuereturn.ID
+//		temp_map["comment"]=valuereturn.Name
+//		temp_map["Uuid"]=valuereturn.Uuid
+//		temp_map["name"]=valuereturn.Name
+//		temp_map["subject_count"]=personTotal
+//		temp_map["subject_type"]=1
+//		temp_map["update_by"]="admin@91zo.com"
+//		temp_map["update_time"]=1632282494.0
+//		temp_map["type"]=valuereturn.Type
+//		temp_map["datatype"]="local"
+//		util.G_map_GroupsLocal.Set(uuid,temp_map)
+//	}
+//
+//}
 
 
 
@@ -124,11 +343,12 @@ func initRouter(e *gin.Engine) {
 	{
 		system.GET("/start", howToStart)
 		system.POST("/auth/login", AuthLogin)
+		system.POST("/compare", Compare)
 		system.POST("/subject", AddPerson)
 		system.DELETE("/subject", AuthLogin)
-		system.POST("/subject/photo", AuthLogin)
+		system.POST("/subject/photo", AddPhoto)
 		system.GET("/mobile-admin/subjects/list", GetEmployeeList)
-		system.GET("/subjects/group/list", AuthLogin)
+		system.GET("/subjects/group/list", Subjectsgrouplist)
 
 
 		//system.GET("/client", Websocketclient)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	client "go-common/app/service/main/vip/dao/ele-api-client"
+	"reflect"
 	"strings"
 	"zhiyuan/koala2hongtuadapt/dao"
 	"zhiyuan/koala2hongtuadapt/model"
@@ -553,13 +554,18 @@ func GetGroupsHongtuList(params interface{})([]map[string]interface{},error){
 		log4go.Error("查询失败",err)
 		return nil,err
 	}
-
+	log4go.Debug(personlist)
 	if value,err := personlist.Get("code").Int();err == nil{
+		log4go.Debug("get code",value)
 		if value == 0{
-			if array,err := personlist.Get("data").Array();err == nil{
+			log4go.Debug("get data",personlist.Get("data"))
+			if array,err := personlist.Get("data").Get("list").Array();err == nil{
 				if len(array) > 0 {
 					for k,_ := range array{
+						log4go.Info("array",array[k])
+						log4go.Info("value type is",typeof(array[k]))
 						if value,ok := array[k].(map[string]interface{});ok{
+							log4go.Info("is map")
 							person_map_list = append(person_map_list, value)
 						}
 					}
@@ -570,4 +576,8 @@ func GetGroupsHongtuList(params interface{})([]map[string]interface{},error){
 
 	return person_map_list,nil
 
+}
+
+func typeof(v interface{}) string {
+	return reflect.TypeOf(v).String()
 }
