@@ -98,7 +98,7 @@ func Identify_Init(koala_host,koala_username,koala_password string)(){
 
 
 func GetSubjectsLocal(){
-	subjects,err := dao.FindSubjectShip("")
+	subjects,err := dao.FindSubjectShip("","",0)
 	if err != nil{
 		if strings.Index(err.Error(),"not found") != -1{
 
@@ -129,7 +129,7 @@ func GetSubjectsLocal(){
 }
 
 func GetSubjectsHongtu(){
-	subjects,err := hongtu.GetEmployeeList("")
+	subjects,_,err := hongtu.GetEmployeeList("",1,10000)
 	if err != nil{
 		log4go.Error("查询本地人员失败:",err)
 		return
@@ -142,6 +142,7 @@ func GetSubjectsHongtu(){
 			}
 			subject := util.G_map_SubjectsLocal.Get(uuid)
 			if subject !=nil{
+
 
 
 				continue
@@ -344,6 +345,7 @@ func initRouter(e *gin.Engine) {
 		system.GET("/start", howToStart)
 		system.POST("/auth/login", AuthLogin)
 		system.POST("/compare", Compare)
+		system.POST("/recognize", Recognize)
 		system.POST("/subject", AddPerson)
 		system.DELETE("/subject", AuthLogin)
 		system.POST("/subject/photo", AddPhoto)

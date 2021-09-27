@@ -8,6 +8,8 @@ import (
 	"strings"
 	"zhiyuan/koala2hongtuadapt/dao"
 	"zhiyuan/koala2hongtuadapt/model"
+	"zhiyuan/zyutil"
+
 	//"zhiyuan/zyutil"
 
 	//client "go-common/app/service/main/vip/dao/ele-api-client"
@@ -503,7 +505,7 @@ func Visitor2Koala(visitor model.Visitor) (model.Visitor, error) {
 	return visitor, nil
 }
 
-func GetEmployeeList(name string)([]map[string]interface{},error){
+func GetEmployeeList(name string,page,size int)([]map[string]interface{},map[string]interface{},error){
 
 	temp_map := make(map[string]interface{},0)
 	person_map_list := make([]map[string]interface{},0)
@@ -515,18 +517,18 @@ func GetEmployeeList(name string)([]map[string]interface{},error){
 		temp_map["name"] = name
 	}
 
-	temp_map["pageNum"] = 1
-	temp_map["pageSize"] = 10000
+	temp_map["pageNum"] = page
+	temp_map["pageSize"] = size
 
 	personlist, err := hongtu.PersonList(temp_map)
 	if err != nil {
 		log4go.Error(temp_map["name"].(string) + "查询失败")
-		return nil,err
+		return nil,nil,err
 	}
 
 	if value,err := personlist.Get("code").Int();err == nil{
 		if value == 0{
-			if array,err := personlist.Get("data").Array();err == nil{
+			if array,err := personlist.Get("data").Get("list").Array();err == nil{
 				if len(array) > 0 {
 					for k,_ := range array{
 						if value,ok := array[k].(map[string]interface{});ok{
@@ -537,8 +539,24 @@ func GetEmployeeList(name string)([]map[string]interface{},error){
 			}
 		}
 	}
+	counts := 0
+	log4go.Info(personlist.Get("data").Get("total"))
+	if value,err := personlist.Get("data").Get("total").Int();err == nil{
+		counts = value
+		//log4go.Info("get value",value)
+	}
 
-	return person_map_list,nil
+	//log4go.Info("get counts",counts)
+	//log4go.Info("get size",size)
+	total := zyutil.GetTotal(counts,size)
+	pages := map[string]interface{}{
+		"count": counts,
+		"current":page,
+		"size":size,
+		"total":total,
+	}
+
+	return person_map_list,pages,nil
 
 }
 

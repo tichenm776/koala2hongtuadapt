@@ -9,12 +9,12 @@ import (
 	client "go-common/app/service/main/vip/dao/ele-api-client"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"zhiyuan/koala2hongtuadapt/dao"
 	hongtu2 "zhiyuan/koala2hongtuadapt/hongtu"
 	"zhiyuan/koala2hongtuadapt/model"
-	"zhiyuan/koala2hongtuadapt/server"
 	"zhiyuan/koala2hongtuadapt/util"
 	hongtu "zhiyuan/koala_api_go/hongtu_api"
 	koala "zhiyuan/koala_api_go/koala_api"
@@ -116,64 +116,197 @@ func  CreateID()int{
 	value ,_ := strconv.Atoi(str_uuid)
 	return value
 }
-
+func typeof(v interface{}) string {
+	return reflect.TypeOf(v).String()
+}
 func AddPerson(c *gin.Context){
+
+	log4go.Info(c.Request.Header)
+	clientip := c.ClientIP()
+	log4go.Info(c)
+	body, _ := ioutil.ReadAll(c.Request.Body)
+	m := make(map[string]interface{}, 0)
+	json.Unmarshal(body, &m)
+	log4go.Info("m", m)
 	resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
-	subject :=	model.Subject{}
+	//subject :=	model.Subject{}
 	temp_map := make(map[string]interface{},0)
 	var (
-		err  error
+		//err  error
 	)
+	come_from := ""
+	department := ""
+	name := ""
+	phone := ""
+	remark := ""
+	interviewee_id := ""
+	end_time := 0
+	start_time := 0
+	subject_type := 0
+	Purpose := 0
+	group_ids := []int{}
 
-	if err = c.Bind(&subject);err == nil{
-		if err := util.Verify(subject,util.SubjectCreateDTOVerify);err != nil{
-			c.JSON(200, util.Err(-1019,"参数错误",err))
-			return
+	log4go.Info(typeof(m["group_ids"].([]interface{})[0]))
+	log4go.Info(m["group_ids"])
+
+
+	if value,ok := m["come_from"].(string);ok{
+		come_from = value
+	}
+	if value,ok := m["department"].(string);ok{
+		department = value
+	}
+	if value,ok := m["end_time"].(int);ok{
+		end_time = value
+	}
+	if value,ok := m["end_time"].(float64);ok{
+		end_time = int(value)
+	}
+	if value,ok := m["group_ids"].([]interface{});ok{
+		if len(value) > 0{
+			for k,_ := range value{
+				if value2,ok := value[k].(float64);ok{
+					group_ids = append(group_ids, int(value2))
+				}
+			}
 		}
 	}
-	if err != nil{
-		c.JSON(200, util.Err(-1019,"账号或密码错误",err))
-		return
+	if value,ok := m["name"].(string);ok{
+		name = value
 	}
+	if value,ok := m["phone"].(string);ok{
+		phone = value
+	}
+	if value,ok := m["remark"].(string);ok{
+		remark = value
+		remarks_arr := strings.Split(value,"-")
+		if len(remarks_arr) > 2{
+			remark = remarks_arr[0]
+			interviewee_id = remarks_arr[1]
+		}
+	}
+	if value,ok := m["start_time"].(int);ok{
+		start_time = value
+	}
+	if value,ok := m["start_time"].(float64);ok{
+		start_time = int(value)
+	}
+	if value,ok := m["subject_type"].(float64);ok{
+		subject_type = int(value)
+	}
+	if value,ok := m["purpose"].(float64);ok{
+		Purpose = int(value)
+	}
+	//if err = c.Bind(&subject);err != nil{
+	//	log4go.Error("获取参数错误"+err.Error())
+	//		c.JSON(200, util.Err(-1019,"获取参数错误",err))
+	//		return
+	//}
+	//log4go.Info(come_from)
+	//log4go.Info(department)
+	//log4go.Info(name)
+	//log4go.Info(phone)
+	//log4go.Info(remark)
+	//log4go.Info(interviewee_id)
+	//log4go.Info(start_time)
+	//log4go.Info(end_time)
+
+
+	//log4go.Info(subject)
+	//log4go.Info(subject.Group_ids)
+	//log4go.Info(subject.Photo_ids)
+
+	//if err != nil{
+	//	c.JSON(200, util.Err(-1019,"账号或密码错误",err))
+	//	return
+	//}
 	uuid := client.UUID4()
-	switch subject.Subject_type {
+	switch subject_type {
 	case 0:
 		//员工类型插入
 		temp_map["type"] = 1
-		temp_map["visitedUuid"] = 1
+		id ,_:= strconv.Atoi(interviewee_id)
+		Subject,err := dao.FindSubjectShip2("","",id)
+		if err != nil{
+			resp4Device.Code = -100
+			resp4Device.Err_msg = temp_map["name"].(string) + "申请失败"
+			log4go.Error(resp4Device.Err_msg)
+			//return model.Visitor{}, errors.New(resp4Device.Err_msg)
+			c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+			return
+		}
+		temp_map["visitedUuid"] = Subject.Uuid
 	case 1:
 		//普通访客类型插入
 		temp_map["type"] = 2
-		temp_map["visitedUuid"] = 2
+		id ,_:= strconv.Atoi(interviewee_id)
+		Subject,err := dao.FindSubjectShip2("","",id)
+		if err != nil{
+				resp4Device.Code = -100
+				resp4Device.Err_msg = temp_map["name"].(string) + "申请失败"
+				log4go.Error(resp4Device.Err_msg)
+				//return model.Visitor{}, errors.New(resp4Device.Err_msg)
+				c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+				return
+		}
+		temp_map["visitedUuid"] = Subject.Uuid
+		log4go.Info(Subject)
+
 	case 2:
 		//VIP访客插入
 		temp_map["type"] = 2
+		id ,_:= strconv.Atoi(interviewee_id)
+		Subject,err := dao.FindSubjectShip2("","",id)
+		if err != nil{
+			resp4Device.Code = -100
+			resp4Device.Err_msg = temp_map["name"].(string) + "申请失败"
+			log4go.Error(resp4Device.Err_msg)
+			//return model.Visitor{}, errors.New(resp4Device.Err_msg)
+			c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+			return
+		}
+		temp_map["visitedUuid"] = Subject.Uuid
 	case 3:
 		//黄名单插入
 	}
+	groupList := []string{}
 
+	if len(group_ids) > 0{
+		for k,_ := range group_ids{
+			result,err := dao.FindGroupShip2(group_ids[k])
+			if err != nil{
+				resp4Device.Code = -100
+				resp4Device.Err_msg = temp_map["name"].(string) + "申请失败:查询访客组失败"
+				log4go.Error(resp4Device.Err_msg)
+				//return model.Visitor{}, errors.New(resp4Device.Err_msg)
+				c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+				return
+			}
+			groupList = append(groupList, result.Uuid)
+		}
+	}
 
-	//temp_map["type"] = 1
-	temp_map["name"] = subject.Name
+	//log4go.Info("temp_map[\"visitedUuid\"] is",temp_map["visitedUuid"])
+	temp_map["name"] = name
 	temp_map["uuid"] = uuid
-	temp_map["phone"] = subject.Phone
+	temp_map["phone"] = phone
 	//添加照片与人员组
 	//temp_map["imageUri"] = uri
-	temp_map["identifyNum"] = subject.Remark
-	temp_map["visitFirm"] = subject.Come_from
-	temp_map["visitStartTimeStamp"] = subject.Start_time
-	temp_map["visitEndTimeStamp"] = subject.End_time
-	temp_map["visitReason"] = Purpose_map[subject.Purpose]
-	temp_map["visitedUuid"] = uuid
+	temp_map["identifyNum"] = remark
+	temp_map["visitFirm"] = come_from
+	temp_map["visitStartTimeStamp"] = start_time*1000
+	temp_map["visitEndTimeStamp"] = end_time*1000
+	temp_map["visitReason"] = Purpose_map[Purpose]
+	temp_map["groupList"] = groupList
 
-	log4go.Debug("add koala temp", temp_map)
+	//log4go.Debug("add koala temp", temp_map)
 
 	list := []map[string]interface{}{temp_map}
 	params := map[string]interface{}{
 		"personList":list,
 	}
-
-	_, err = hongtu.AddPerson(params)
+	//log4go.Info("add params",params)
+	_, err := hongtu.AddPerson(params)
 	if err != nil {
 		resp4Device.Code = -100
 		resp4Device.Err_msg = temp_map["name"].(string) + "申请失败"
@@ -182,10 +315,26 @@ func AddPerson(c *gin.Context){
 		c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
 		return
 	}
-	//ship := model.SubjectShip{Uuid: uuid}
-	//db.CreateSubjectShip()
+	ship := &model.SubjectShip{Uuid: uuid,Name: name,
+		ClientIp: clientip,IdentifyNum:remark,
+		VisitType:temp_map["type"].(int),Phone:phone,Uri:"",}
+	visitor,err := dao.CreateSubjectShip(ship)
 
-
+	if err != nil {
+		resp4Device.Code = -100
+		resp4Device.Err_msg = temp_map["name"].(string) + "申请失败"
+		log4go.Error(resp4Device.Err_msg)
+		//return model.Visitor{}, errors.New(resp4Device.Err_msg)
+		c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+		return
+	}
+	log4go.Info("visitor is",visitor)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"err_msg": "",
+		"data":    visitor,
+		"page":map[string]interface{}{},
+	})
 }
 
 
@@ -251,40 +400,143 @@ func AuthLogin(c *gin.Context){
 
 func GetEmployeeList(c *gin.Context){
 	resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
-	//subject :=	model.Subject{}
-	temp_map := make(map[string]interface{},0)
-	var (
-		err  error
-	)
-	name,_ := c.Params.Get("name")
+	////subject :=	model.Subject{}
+	temp_map := make([]map[string]interface{},0)
+	//var (
+	//	err  error
+	//)
+	clientip := c.ClientIP()
 
-	personlist,err := hongtu2.GetEmployeeList(name)
+	json_return := `{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1632472126,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":98,"name":"floor_15\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":158,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u738b\u529b\u5b8f2","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18357036166","photos":[],"pinyin":"wanglihong2","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""}`
+	json_data := make(map[string]interface{},0)
+	json.Unmarshal([]byte(json_return),&json_data)
+	tempmap := json_data
+	name := c.Query("name")
+	size := c.Query("size")
+	page := c.Query("page")
+	log4go.Info("get size",size)
+	log4go.Info("get page",page)
+	size_int,err := strconv.Atoi(size)
+	page_int,err := strconv.Atoi(page)
+	log4go.Info("get size_int",size_int)
+	log4go.Info("get page_int",page_int)
+	//dao.FindSubjectShip("",name)
+	if size_int == 0{
+		size_int = 5
+	}
+	if page_int == 0{
+		page_int = 1
+	}
+	personlist,pages,err := hongtu2.GetEmployeeList(name,page_int,size_int)
 	if err != nil {
 		resp4Device.Code = -100
-		resp4Device.Err_msg = temp_map["name"].(string) + "查询失败"
+		resp4Device.Err_msg = "查询失败"
 		log4go.Error(resp4Device.Err_msg)
 		//return model.Visitor{}, errors.New(resp4Device.Err_msg)
 		c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
 		return
 	}
 
+	dao.DeleteShip(clientip)
+	for k,_ := range personlist{
+		//tmp_map := make(map[string]interface{},0)
+		uuid := ""
+		uri := ""
+		name := ""
+		identifyNum := ""
+		phone := ""
+		visitType := 1
+
+		if value,ok := personlist[k]["uuid"].(string);ok{
+			uuid = value
+		}
+		if value,ok := personlist[k]["imageUri"].(string);ok{
+			if value != ""{
+				index1 := strings.Index(value,"?")
+				index2 := strings.Index(value,"pub/")
+				uri = value[index2+4:index1]
+			}
+		}
+		if value,ok := personlist[k]["name"].(string);ok{
+			name = value
+		}
+		if value,ok := personlist[k]["identifyNum"].(string);ok{
+			identifyNum = value
+		}
+		if value,ok := personlist[k]["visitType"].(int);ok{
+			visitType = value
+		}
+		if value,ok := personlist[k]["phone"].(string);ok{
+			phone = value
+		}
+
+		temp_sub := model.SubjectShip{
+			Uuid: uuid,
+			Uri:uri,
+			Name: name,
+			Phone: phone,
+			VisitType: visitType,
+			IdentifyNum: identifyNum,
+			ClientIp: clientip,
+		}
+
+		subject,err := dao.CreateSubjectShip(&temp_sub)
+		if err != nil{
+			resp4Device.Code = -100
+			resp4Device.Err_msg = "添加失败"+err.Error()
+			log4go.Error(resp4Device.Err_msg)
+			continue
+		}
+		//log4go.Info("get subject",subject)
+		tmp_map := Copymap(tempmap)
+		id := subject.ID
+		subjectname := subject.Name
+		tmp_map.(map[string]interface{})["id"] = id
+		tmp_map.(map[string]interface{})["name"] = subjectname
+
+		temp_map = append(temp_map, tmp_map.(map[string]interface{}))
+	}
+
+	//log4go.Info("temp_map is",temp_map)
+
 	//类型转换 hongtu->koala
 
 	//ship := model.SubjectShip{Uuid: uuid}
 	//db.CreateSubjectShip()
+	//json_return := `{"code":0,"data":[{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1632472126,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":98,"name":"floor_15\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":158,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u738b\u529b\u5b8f2","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18357036166","photos":[],"pinyin":"wanglihong2","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1632450256,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":98,"name":"floor_15\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":157,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u738b\u529b\u5b8f2","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18357036165","photos":[],"pinyin":"wanglihong2","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1632282560,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":98,"name":"floor_15\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":155,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u738b\u529b\u5b8f3","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18357036164","photos":[],"pinyin":"wanglihong3","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1630897914,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[],"house":null,"house_rel_code":1,"id":151,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u738b\u529b\u5b8f2","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18357036165","photos":[{"company_id":1,"id":116,"origin_url":"/static/upload/origin/2021-09-06/v2_32dded04f9e166d2a07fce8738cad0e4bb8c895f.jpg","quality":0.99557,"subject_id":151,"url":"/static/upload/photo/2021-09-06/v2_40bd8bcaf0b94ac8947c7ad729435baa42426275.jpg","version":7}],"pinyin":"wanglihong2","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1630639100,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":94,"name":"3F\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":138,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u90ed\u674e\u6e05","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"15074966932","photos":[],"pinyin":"guoliqing","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1630545694,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":88,"name":"1\u697c\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":119,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u5c0f\u90ed","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18170672948","photos":[],"pinyin":"xiaoguo","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1630545357,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[{"id":88,"name":"1\u697c\u5458\u5de5\u7ec4"}],"house":null,"house_rel_code":1,"id":118,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u8d85\u7ea7","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"13354985621","photos":[],"pinyin":"chaoji","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1629783823,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":1,"groups":[],"house":null,"house_rel_code":1,"id":88,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"\u738b\u529b\u5b8f2","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"18357036164","photos":[],"pinyin":"wanglihong2","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1629702648,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":0,"groups":[],"house":null,"house_rel_code":1,"id":86,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"w'erwew'er","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"","photos":[{"company_id":1,"id":106,"origin_url":"/static/upload/origin/2021-08-23/v2_a6caeb3580495f38b8695d1549ad3546a7ca5927.jpg","quality":0.999735,"subject_id":86,"url":"/static/upload/photo/2021-08-23/v2_7a706aeec1dd67da6e497dbd2acb078fd542d49d.jpg","version":7}],"pinyin":"w'erwew'er","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""},{"avatar":"","birthday":null,"building":null,"come_from":"","company_id":1,"create_time":1629701357,"credential_no":"","credential_type":null,"department":"","description":"","domicile_address":"","domicile_city_code":null,"domicile_district_code":null,"domicile_province_code":null,"domicile_street_code":null,"education_code":null,"email":"","end_time":0,"entrance_people_type":null,"entry_date":null,"extra_id":null,"gender":0,"groups":[],"house":null,"house_rel_code":1,"id":85,"interviewee":"","interviewee_pinyin":"","is_use":true,"job_number":"","marital_status_code":null,"name":"fsdf","nation":null,"nationality_code":"","origin":"","password_reseted":false,"people_type":null,"phone":"","photos":[{"company_id":1,"id":105,"origin_url":"/static/upload/origin/2021-08-23/v2_de9899d2ae762d0f91033ada87f3e9b5f7f79b1b.jpg","quality":0.99804,"subject_id":85,"url":"/static/upload/photo/2021-08-23/v2_2bc87b2fc7041f41a797f2e42c29016f7f4faff0.jpg","version":7}],"pinyin":"fsdf","purpose":0,"remark":"","residence_address":"","residence_city_code":null,"residence_district_code":null,"residence_province_code":null,"residence_street_code":null,"source":1,"start_time":0,"subject_type":0,"title":"","village":null,"visit_notify":false,"wg_number":""}],"page":{"count":22,"current":1,"size":10,"total":3},"timecost":42}`
+
+	//"page":{"count":22,"current":1,"size":10,"total":3}
 
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
 		"err_msg": "",
-		"data":    personlist,
-		"page":map[string]interface{}{},
+		"data":    temp_map,
+		"page":pages,
 	})
 
-
+	//c.JSON(http.StatusOK, json_data)
 
 }
+func Copymap(value interface{}) interface{} {
+	if valueMap, ok := value.(map[string]interface{}); ok {
+		newMap := make(map[string]interface{})
+		for k, v := range valueMap {
+			newMap[k] = Copymap(v)
+		}
 
+		return newMap
+	} else if valueSlice, ok := value.([]interface{}); ok {
+		newSlice := make([]interface{}, len(valueSlice))
+		for k, v := range valueSlice {
+			newSlice[k] = Copymap(v)
+		}
+
+		return newSlice
+	}
+
+	return value
+}
 
 func Compare(c *gin.Context){
 
@@ -296,6 +548,20 @@ func Compare(c *gin.Context){
 
 }
 
+func Recognize(c *gin.Context){
+
+
+	//json_return := `{"face_info_1":{"rect":{"left":87,"top":109,"right":262,"bottom":283},"quality":0.9955986086279154,"brightness":116.19357429718876,"std_deviation":28.79753933868924},"face_info_2":{"rect":{"left":87,"top":109,"right":262,"bottom":283},"quality":0.9955986086279154,"brightness":116.19357429718876,"std_deviation":28.79753933868924},"same":true,"score":98.16325378417969,"thresholds":{"E3":41.35199737548828,"E4":48.90372848510742,"E5":55.6849365234375,"E6":62.1713752746582,"recognizing":68,"stranger":67,"verify":68,"gate":78}}`
+	//json_return := `{"candidates":[{"id":64,"subject_id":52,"photo_id":64,"confidence":33.55346},{"id":106,"subject_id":86,"photo_id":106,"confidence":21.79743},{"id":15,"subject_id":5,"photo_id":15,"confidence":20.482822}],"face_info":{"rect":{"left":146,"top":180,"right":335,"bottom":369},"quality":0.9960721684619784,"brightness":141.17540181691126,"std_deviation":23.86713417529236},"person":{"id":64,"subject_id":52,"photo_id":64,"confidence":33.55346},"recognized":false,"thresholds":{"E3":41.35199737548828,"E4":48.90372848510742,"E5":55.6849365234375,"E6":62.1713752746582,"recognizing":68,"stranger":67,"verify":68,"gate":78}}`
+	json_return :=`{"can_door_open":false,"error":7}`
+	json_data := make(map[string]interface{},0)
+	json.Unmarshal([]byte(json_return),&json_data)
+	log4go.Info(json_data)
+	c.JSON(http.StatusOK, json_data)
+
+}
+
+
 func Subjectsgrouplist(c *gin.Context){
 	resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
 	data := make([]map[string]interface{},0)
@@ -306,7 +572,9 @@ func Subjectsgrouplist(c *gin.Context){
 	//json.Unmarshal([]byte(json_return),&json_data)
 
 	//log4go.Info(json_data["data"].([]interface{})[0])
-
+	//go func() {
+	GetGroupsHongtu()
+	//}()
 
 	//temp_map := make(map[string]interface{},0)
 	//temp_map["type"] = 1
@@ -338,9 +606,7 @@ func Subjectsgrouplist(c *gin.Context){
 		}
 
 	}
-	go func() {
-		GetGroupsHongtu()
-	}()
+
 
 	//c.JSON(http.StatusOK, json_data)
 	c.JSON(http.StatusOK, gin.H{
@@ -415,6 +681,28 @@ func GetGroupsHongtu_value(HongtuGroup map[string]interface{}){
 
 func AddPhoto(c *gin.Context){
 	//resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
+	//log4go.Info(c.Request)
+	//body, _ := ioutil.ReadAll(c.Request.Body)
+	//m := make(map[string]interface{}, 0)
+	//json.Unmarshal(body, &m)
+	//log4go.Info("m", m)
+
+	json_return := `{"company_id":1,"id":123,"origin_url":"/static/upload/origin/2021-09-26/v2_4b4b6a8f681d68254427e80506426b6aaf68a86c.jpg","quality":null,"subject_id":null,"url":"/static/upload/photo/2021-09-26/v2_a94965c0110044ae16350644f047b517e8f13162.jpg","version":7}`
+
+	json_data := make(map[string]interface{},0)
+	json.Unmarshal([]byte(json_return),&json_data)
+
+	subject_id := c.Request.FormValue("subject_id")
+	log4go.Info("get subject_id",subject_id)
+	if subject_id == ""{
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0,
+			"err_msg": "",
+			"data":    json_data,
+			"page":map[string]interface{}{},
+		})
+		return
+	}
 	_, header, err1 := c.Request.FormFile("photo")
 	if err1 != nil{
 		log4go.Error("获取照片文件失败:",err1)
@@ -425,13 +713,13 @@ func AddPhoto(c *gin.Context){
 		})
 		return
 	}
+
+
+
 	//resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
 	//data := make([]map[string]interface{},0)
 	//json_return := `{"code":0,"data":[{"comment":"floor_15\u8bbf\u5ba2\u7ec4","id":99,"name":"floor_15\u8bbf\u5ba2\u7ec4","subject_count":1,"subject_type":1,"update_by":"admin@91zo.com","update_time":1632282494.0},{"comment":"2\u697c\u8bbf\u5ba2\u7ec4","id":97,"name":"2\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630893529.0},{"comment":"3F\u8bbf\u5ba2\u7ec4","id":95,"name":"3F\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630639023.0},{"comment":"1\u697c\u8bbf\u5ba2\u7ec4","id":89,"name":"1\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630544330.0},{"comment":"floor_20\u8bbf\u5ba2\u7ec4","id":17,"name":"floor_20\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1629269644.0}],"page":{"count":5,"current":1,"size":10,"total":1},"timecost":55}`
-	json_return := `{"company_id":1,"id":123,"origin_url":"/static/upload/origin/2021-09-26/v2_4b4b6a8f681d68254427e80506426b6aaf68a86c.jpg","quality":null,"subject_id":null,"url":"/static/upload/photo/2021-09-26/v2_a94965c0110044ae16350644f047b517e8f13162.jpg","version":7}`
 
-	json_data := make(map[string]interface{},0)
-	json.Unmarshal([]byte(json_return),&json_data)
 	photo,err :=header.Open()
 	if err != nil{
 		log4go.Error("获取照片文件失败:",err)
@@ -464,19 +752,46 @@ func AddPhoto(c *gin.Context){
 		return
 	}
 
-	photoship ,err := server.AddPhotoShip(uri)
+	//photoship ,err := server.AddPhotoShip(uri)
+	//if err != nil{
+	//	log4go.Error("存储uri失败:",err)
+	//	c.JSON(http.StatusOK, gin.H{
+	//		"code":    -100,
+	//		"err_msg": "存储uri失败",
+	//		"page":map[string]interface{}{},
+	//	})
+	//	return
+	//}
+	subject_id_int , _ := strconv.Atoi(subject_id)
+	subject,err := dao.FindSubjectShip2("","",subject_id_int)
 	if err != nil{
-		log4go.Error("存储uri失败:",err)
+			log4go.Error("查询人员失败:",err)
+			c.JSON(http.StatusOK, gin.H{
+				"code":    -100,
+				"err_msg": "查询人员失败",
+				"page":map[string]interface{}{},
+			})
+			return
+	}
+
+	updateparams := map[string]interface{}{
+		"imageUri":uri,
+		"uuid":subject.Uuid,
+	}
+	log4go.Info("updateparams",updateparams)
+	_,err = hongtu.Personupdate(updateparams)
+	if err != nil{
+		log4go.Error("更新人员失败:",err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    -100,
-			"err_msg": "存储uri失败",
+			"err_msg": "更新人员失败",
 			"page":map[string]interface{}{},
 		})
 		return
 	}
 
-	json_data["id"] = photoship.ID
-
+	//json_data["id"] = photoship.ID
+	//log4go.Info("json_data is",json_data)
 	//c.JSON(http.StatusOK, json_data)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,

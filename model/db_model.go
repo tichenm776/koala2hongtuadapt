@@ -6,13 +6,14 @@ import (
 )
 
 type SubjectShip struct {
-	ID   int    `gorm:"primary_key:AUTO_INCREMENT;column:id;not null" json:"subject_id"`
+	ID   int    `gorm:"primary_key:AUTO_INCREMENT;column:id;not null" json:"id"`
 	Uuid string `gorm:"column:uuid;index:idx_uuid" json:"uuid"` //2021.5.30被访人手机号码
-	Uri  string `gorm:"column:uri;index:idx_uri" json:"uri"` //2021.5.30被访人手机号码
+	Uri  string `gorm:"column:uri;" json:"uri"` //2021.5.30被访人手机号码
 	Name  string `gorm:"column:name;index:idx_name" json:"name"` //2021.5.30被访人手机号码
 	Phone  string `gorm:"column:phone;index:idx_phone" json:"phone"` //2021.5.30被访人手机号码
-	VisitType  string `gorm:"column:visitType;index:idx_visitType" json:"visitType"` //2021.5.30被访人手机号码
-	IdentifyNum  string `gorm:"column:identifyNum;index:idx_identifyNum" json:"identifyNum"` //2021.5.30被访人手机号码
+	VisitType  int `gorm:"column:visitType;index:idx_visitType" json:"visitType"` //2021.5.30被访人手机号码
+	IdentifyNum  string `gorm:"column:identifyNum;" json:"identifyNum"` //2021.5.30被访人手机号码
+	ClientIp  string `gorm:"column:clientIp;index:idx_clientIp" json:"clientIp"` //2021.5.30被访人手机号码
 }
 
 type PhotoShip struct {
