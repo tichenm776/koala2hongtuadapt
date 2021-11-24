@@ -28,10 +28,9 @@ import (
 func New(port string) {
 	go func() {
 		koalainit()
-
 		//TemplateIdInit()
 	}()
-
+	CleanRecords()
 	engine := gin.Default()
 	initRouter(engine)
 	//ModifySubject()
@@ -59,9 +58,23 @@ func koalainit ()bool{
 
 }
 
+func CleanRecords() {
+	cronTarget := cron.New(cron.WithSeconds())
+	spec := "0 2 * * * ?"
+	cronTarget.AddFunc(spec, func() {
+		//lock.Lock()
+		dao.DeleteShip_Clean()
+		//lock.Unlock()
+	})
+	cronTarget.Start()
+	log4go.Info("corn-koalaLogin", "定时开始---删除人员！")
+}
+
+
 func InitValue()  {
 	GetGroupsLocal()
 	GetGroupsHongtu()
+
 }
 
 func Identify_Init(koala_host,koala_username,koala_password string)(){
@@ -347,7 +360,7 @@ func initRouter(e *gin.Engine) {
 		system.POST("/compare", Compare)
 		system.POST("/recognize", Recognize)
 		system.POST("/subject", AddPerson)
-		system.DELETE("/subject", AuthLogin)
+		system.DELETE("/subject/:id", DeletePerson)
 		system.POST("/subject/photo", AddPhoto)
 		system.GET("/mobile-admin/subjects/list", GetEmployeeList)
 		system.GET("/subjects/group/list", Subjectsgrouplist)

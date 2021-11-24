@@ -2,16 +2,22 @@ package http_api
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"github.com/alecthomas/log4go"
 	"github.com/gin-gonic/gin"
 	"github.com/zhenorzz/snowflake"
 	client "go-common/app/service/main/vip/dao/ele-api-client"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"os/exec"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"zhiyuan/koala2hongtuadapt/dao"
 	hongtu2 "zhiyuan/koala2hongtuadapt/hongtu"
 	"zhiyuan/koala2hongtuadapt/model"
@@ -50,7 +56,7 @@ func LoginIn(c *gin.Context) {
 	if code != 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    code,
-			"err_msg": err_msg,
+			"desc": err_msg,
 		})
 		return
 	}
@@ -63,7 +69,7 @@ func LoginIn(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"code":    -102,
-				"err_msg": "账号密码错误!",
+				"desc": "账号密码错误!",
 			})
 			return
 		}
@@ -74,7 +80,7 @@ func LoginIn(c *gin.Context) {
 		if err1 != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"code":    -102,
-				"err_msg": err1.Error(),
+				"desc": err1.Error(),
 			})
 			return
 		}
@@ -94,7 +100,7 @@ func LoginIn(c *gin.Context) {
 		})
 		c.JSON(http.StatusOK, gin.H{
 			"code":    code,
-			"err_msg": err_msg,
+			"desc": err_msg,
 			"data":    data,
 		})
 		return
@@ -122,7 +128,8 @@ func typeof(v interface{}) string {
 func AddPerson(c *gin.Context){
 
 	log4go.Info(c.Request.Header)
-	clientip := c.ClientIP()
+	clientip := c.Request.Header.Get("X-Real-IP")
+	//clientip := c.ClientIP()
 	log4go.Info(c)
 	body, _ := ioutil.ReadAll(c.Request.Body)
 	m := make(map[string]interface{}, 0)
@@ -140,14 +147,14 @@ func AddPerson(c *gin.Context){
 	phone := ""
 	remark := ""
 	interviewee_id := ""
-	end_time := 0
-	start_time := 0
+	end_time := int64(0)
+	start_time := int64(0)
 	subject_type := 0
 	Purpose := 0
 	group_ids := []int{}
 
-	log4go.Info(typeof(m["group_ids"].([]interface{})[0]))
-	log4go.Info(m["group_ids"])
+	//log4go.Info(typeof(m["group_ids"].([]interface{})[0]))
+	//log4go.Info(m["group_ids"])
 
 
 	if value,ok := m["come_from"].(string);ok{
@@ -156,11 +163,11 @@ func AddPerson(c *gin.Context){
 	if value,ok := m["department"].(string);ok{
 		department = value
 	}
-	if value,ok := m["end_time"].(int);ok{
-		end_time = value
-	}
+	//if value,ok := m["end_time"].(int);ok{
+	//	end_time = value
+	//}
 	if value,ok := m["end_time"].(float64);ok{
-		end_time = int(value)
+		end_time = int64(value)
 	}
 	if value,ok := m["group_ids"].([]interface{});ok{
 		if len(value) > 0{
@@ -180,16 +187,17 @@ func AddPerson(c *gin.Context){
 	if value,ok := m["remark"].(string);ok{
 		remark = value
 		remarks_arr := strings.Split(value,"-")
-		if len(remarks_arr) > 2{
+		log4go.Info("remarks_arr is",remarks_arr)
+		if len(remarks_arr) >= 2{
 			remark = remarks_arr[0]
 			interviewee_id = remarks_arr[1]
 		}
 	}
-	if value,ok := m["start_time"].(int);ok{
-		start_time = value
-	}
+	//if value,ok := m["start_time"].(int);ok{
+	//	start_time = value
+	//}
 	if value,ok := m["start_time"].(float64);ok{
-		start_time = int(value)
+		start_time = int64(value)
 	}
 	if value,ok := m["subject_type"].(float64);ok{
 		subject_type = int(value)
@@ -203,7 +211,7 @@ func AddPerson(c *gin.Context){
 	//		return
 	//}
 	//log4go.Info(come_from)
-	//log4go.Info(department)
+	log4go.Info(department)
 	//log4go.Info(name)
 	//log4go.Info(phone)
 	//log4go.Info(remark)
@@ -236,6 +244,9 @@ func AddPerson(c *gin.Context){
 			return
 		}
 		temp_map["visitedUuid"] = Subject.Uuid
+		if Subject.Uuid == ""{
+
+		}
 	case 1:
 		//普通访客类型插入
 		temp_map["type"] = 2
@@ -295,10 +306,13 @@ func AddPerson(c *gin.Context){
 	temp_map["identifyNum"] = remark
 	temp_map["visitFirm"] = come_from
 	temp_map["visitStartTimeStamp"] = start_time*1000
+	//temp_map["visitStartTimeStamp"] = start_time*1000
 	temp_map["visitEndTimeStamp"] = end_time*1000
+	//temp_map["visitEndTimeStamp"] = end_time*1000
 	temp_map["visitReason"] = Purpose_map[Purpose]
 	temp_map["groupList"] = groupList
-
+	log4go.Info("visitStartTimeStamp is",temp_map["visitStartTimeStamp"])
+	log4go.Info("visitEndTimeStamp is",temp_map["visitEndTimeStamp"])
 	//log4go.Debug("add koala temp", temp_map)
 
 	list := []map[string]interface{}{temp_map}
@@ -313,6 +327,7 @@ func AddPerson(c *gin.Context){
 		log4go.Error(resp4Device.Err_msg)
 		//return model.Visitor{}, errors.New(resp4Device.Err_msg)
 		c.JSON(200, util.Err(resp4Device.Code,resp4Device.Err_msg,err))
+
 		return
 	}
 	ship := &model.SubjectShip{Uuid: uuid,Name: name,
@@ -331,7 +346,7 @@ func AddPerson(c *gin.Context){
 	log4go.Info("visitor is",visitor)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
-		"err_msg": "",
+		"desc": "",
 		"data":    visitor,
 		"page":map[string]interface{}{},
 	})
@@ -353,7 +368,7 @@ func AuthLogin(c *gin.Context){
 	//	log4go.Error("ShouldBind err", err)
 	//	c.JSON(http.StatusOK, gin.H{
 	//		"code":    -200,
-	//		"err_msg": "无请求参数或请求参数有误!",
+	//		"desc": "无请求参数或请求参数有误!",
 	//	})
 	//	return
 	//}
@@ -387,7 +402,7 @@ func AuthLogin(c *gin.Context){
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
-		"err_msg": "",
+		"desc": "",
 		"data":    json_data,
 		"page":map[string]interface{}{},
 	})
@@ -437,7 +452,7 @@ func GetEmployeeList(c *gin.Context){
 		return
 	}
 
-	dao.DeleteShip(clientip)
+	//dao.DeleteShip(clientip)
 	for k,_ := range personlist{
 		//tmp_map := make(map[string]interface{},0)
 		uuid := ""
@@ -469,7 +484,7 @@ func GetEmployeeList(c *gin.Context){
 		if value,ok := personlist[k]["phone"].(string);ok{
 			phone = value
 		}
-
+		subject := model.SubjectShip{}
 		temp_sub := model.SubjectShip{
 			Uuid: uuid,
 			Uri:uri,
@@ -479,13 +494,20 @@ func GetEmployeeList(c *gin.Context){
 			IdentifyNum: identifyNum,
 			ClientIp: clientip,
 		}
-
-		subject,err := dao.CreateSubjectShip(&temp_sub)
+		subject,err = dao.FindSubjectShip3(clientip,uuid)
 		if err != nil{
-			resp4Device.Code = -100
-			resp4Device.Err_msg = "添加失败"+err.Error()
-			log4go.Error(resp4Device.Err_msg)
-			continue
+			if strings.Index(err.Error(),"not found") != -1{
+				subject,err = dao.CreateSubjectShip(&temp_sub)
+				if err != nil{
+					resp4Device.Code = -100
+					resp4Device.Err_msg = "添加失败"+err.Error()
+					log4go.Error(resp4Device.Err_msg)
+					continue
+				}
+			}else{
+				log4go.Error("查询失败",err)
+				continue
+			}
 		}
 		//log4go.Info("get subject",subject)
 		tmp_map := Copymap(tempmap)
@@ -510,7 +532,7 @@ func GetEmployeeList(c *gin.Context){
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
-		"err_msg": "",
+		"desc": "",
 		"data":    temp_map,
 		"page":pages,
 	})
@@ -540,13 +562,208 @@ func Copymap(value interface{}) interface{} {
 
 func Compare(c *gin.Context){
 
+	_, header, err1 := c.Request.FormFile("image_1")
+	if err1 != nil{
+		log4go.Error("获取照片文件失败:",err1)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
 
+
+	_, header2, err1 := c.Request.FormFile("image_2")
+	if err1 != nil{
+		log4go.Error("获取照片文件失败:",err1)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+
+
+
+
+
+
+	photourl,err := SaveUploadedFile(header,header.Filename)
+	if err != nil{
+		log4go.Error("获取照片文件失败:",err1)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	photourl2,err := SaveUploadedFile(header2,header2.Filename)
+	if err != nil{
+		log4go.Error("获取照片文件失败:",err1)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+
+
+
+
+
+
+
+
+
+
+	result,score := Getscore(photourl,photourl2)
 	json_return := `{"face_info_1":{"rect":{"left":87,"top":109,"right":262,"bottom":283},"quality":0.9955986086279154,"brightness":116.19357429718876,"std_deviation":28.79753933868924},"face_info_2":{"rect":{"left":87,"top":109,"right":262,"bottom":283},"quality":0.9955986086279154,"brightness":116.19357429718876,"std_deviation":28.79753933868924},"same":true,"score":98.16325378417969,"thresholds":{"E3":41.35199737548828,"E4":48.90372848510742,"E5":55.6849365234375,"E6":62.1713752746582,"recognizing":68,"stranger":67,"verify":68,"gate":78}}`
 	json_data := make(map[string]interface{},0)
 	json.Unmarshal([]byte(json_return),&json_data)
+	//log4go.Info(json_data)
+	//log4go.Info("result is",result)
+	json_data["same"] = result
+	json_data["score"] = score
+	log4go.Info(json_data)
 	c.JSON(http.StatusOK, json_data)
 
 }
+
+
+func CheckPhoto(photo multipart.File)(error){
+
+	data_return,err := hongtu.AddPhoto(photo)
+	if err != nil{
+		log4go.Error("添加照片失败:",err)
+		return err
+	}
+	log4go.Info(data_return)
+	_,err = data_return.Get("data").Get("uri").String()
+	if err != nil{
+		log4go.Error("获取照片uri失败:",err)
+		log4go.Error("添加照片失败:",err)
+		return err
+	}
+	return nil
+}
+
+
+
+func Getscore(img1,img2 string)(bool,int){
+	score := 0
+	score_index := []byte("feautre score :")
+	name := "/home/zybox/test/Baidu_Face_Offline_SDK_Linux_ARM_5.0/face-sdk-demo/armlinux/face_compare/run.sh"
+	log4go.Info("name value is",name)
+	log4go.Info("img1 value is",img1)
+	log4go.Info("img2 value is",img2)
+	cmd := exec.Command(name,img1,img2)
+	output,err := cmd.Output()
+	if err != nil{
+		log4go.Error("get score err",err)
+		//return false,0
+	}
+	log4go.Info("score_index value is",score_index)
+	log4go.Info("output is",string(output))
+	located := bytes.LastIndex(output,score_index)
+	if located != -1{
+		log4go.Info("located is",located)
+		score_ := output[located+len(score_index):located+len(score_index)+2]
+		log4go.Info("score_ value is",string(score_))
+		score,err = strconv.Atoi(string(score_))
+		if err != nil{
+			log4go.Error("get score err",err)
+		}
+	}
+	if score < 75{
+		log4go.Info("score value is false",score)
+		return false,score
+	}else{
+		log4go.Info("score value is true",score)
+		return true,score
+	}
+
+
+}
+
+
+
+func  SaveUploadedFile(file *multipart.FileHeader, dst string) (string,error) {
+
+	PathExists3()
+	uuid := client.UUID4()
+	src, err := file.Open()
+	if err != nil {
+		return "",err
+	}
+	defer src.Close()
+	//创建 dst 文件
+	time_str := time.Unix(time.Now().Unix(), 0).Format("2006-01-02")
+	out, err := os.Create("/home/zybox/photos/pub/"+time_str+"/"+uuid+"_"+dst)
+	if err != nil {
+		return "",err
+	}
+	defer out.Close()
+	// 拷贝文件
+	_, err = io.Copy(out, src)
+	return "/home/zybox/photos/pub/"+time_str+"/"+uuid+"_"+dst,err
+}
+
+func SavePhoto(pathurl, dst string)(string,error){
+
+	//log4go.Info("files")
+	//log4go.Info(file)
+
+	//presp, err := http.Get(pathurl)
+	//if err != nil {
+	//	log4go.Error(err.Error())
+	//return -1, "", err
+	//}
+	//if presp.StatusCode != 200 {
+	//return -1, "", errors.New("获取照片" + strconv.Itoa(presp.StatusCode) + "错误! 原因：" + presp.Status)
+	//}
+	//defer presp.Body.Close()
+
+	message,_:=base64.StdEncoding.DecodeString(pathurl)
+	//data,_ := base64.StdEncoding.DecodeString(pathurl)
+	pix, err := ioutil.ReadAll(bytes.NewReader(message))
+	//pix, err := ioutil.ReadAll(bytes.NewReader([]byte(pathurl)))
+	if err != nil {
+		log4go.Error(err.Error())
+		//return -1, "", errors.New("读取图片出错!")
+	}
+	//创建 dst 文件
+	time_str := time.Unix(time.Now().Unix(), 0).Format("2006-01-02")
+	//path := "/home/zybox/photos/static/upload/photo/"+time_str+"/"
+	out, err := os.Create("/home/zybox/photos/pub/"+time_str+"/"+dst)
+	if err != nil {
+		return "",err
+	}
+	defer out.Close()
+	// 拷贝文件
+	_, err = io.Copy(out, bytes.NewReader(pix))
+	return "/pub/"+time_str+"/"+dst,err
+
+}
+
+func PathExists3() (bool) {
+	time_str := time.Unix(time.Now().Unix(), 0).Format("2006-01-02")
+	path := "/home/zybox/photos/pub/"+time_str+"/"
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		os.MkdirAll(path,os.ModePerm)
+		return PathExists3()
+	}
+	return true
+}
+
+
 
 func Recognize(c *gin.Context){
 
@@ -611,7 +828,7 @@ func Subjectsgrouplist(c *gin.Context){
 	//c.JSON(http.StatusOK, json_data)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
-		"err_msg": "",
+		"desc": "",
 		"data":    data,
 		"page":map[string]interface{}{},
 	})
@@ -691,41 +908,46 @@ func AddPhoto(c *gin.Context){
 
 	json_data := make(map[string]interface{},0)
 	json.Unmarshal([]byte(json_return),&json_data)
-
-	subject_id := c.Request.FormValue("subject_id")
-	log4go.Info("get subject_id",subject_id)
-	if subject_id == ""{
-		c.JSON(http.StatusOK, gin.H{
-			"code":    0,
-			"err_msg": "",
-			"data":    json_data,
-			"page":map[string]interface{}{},
-		})
-		return
-	}
 	_, header, err1 := c.Request.FormFile("photo")
 	if err1 != nil{
 		log4go.Error("获取照片文件失败:",err1)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    0,
-			"err_msg": "获取照片文件失败",
+			"desc": "获取照片文件失败",
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	subject_id := c.Request.FormValue("subject_id")
+	log4go.Info("get subject_id",subject_id)
+	if subject_id == ""{
+		photo_file,err := header.Open()
+		err = CheckPhoto(photo_file)
+		if err != nil{
+			log4go.Error("获取照片文件失败:",err1)
+			c.JSON(http.StatusOK, gin.H{
+				"code":    -100,
+				"desc": err.Error(),
+				"page":map[string]interface{}{},
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0,
+			"desc": "",
+			"data":    json_data,
 			"page":map[string]interface{}{},
 		})
 		return
 	}
 
-
-
-	//resp4Device := model.Resp4Device{Code: 0, Err_msg: ""}
-	//data := make([]map[string]interface{},0)
-	//json_return := `{"code":0,"data":[{"comment":"floor_15\u8bbf\u5ba2\u7ec4","id":99,"name":"floor_15\u8bbf\u5ba2\u7ec4","subject_count":1,"subject_type":1,"update_by":"admin@91zo.com","update_time":1632282494.0},{"comment":"2\u697c\u8bbf\u5ba2\u7ec4","id":97,"name":"2\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630893529.0},{"comment":"3F\u8bbf\u5ba2\u7ec4","id":95,"name":"3F\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630639023.0},{"comment":"1\u697c\u8bbf\u5ba2\u7ec4","id":89,"name":"1\u697c\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1630544330.0},{"comment":"floor_20\u8bbf\u5ba2\u7ec4","id":17,"name":"floor_20\u8bbf\u5ba2\u7ec4","subject_count":0,"subject_type":1,"update_by":"admin@91zo.com","update_time":1629269644.0}],"page":{"count":5,"current":1,"size":10,"total":1},"timecost":55}`
 
 	photo,err :=header.Open()
 	if err != nil{
 		log4go.Error("获取照片文件失败:",err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    0,
-			"err_msg": "获取照片文件失败",
+			"desc": "获取照片文件失败",
 			"page":map[string]interface{}{},
 		})
 		return
@@ -735,7 +957,7 @@ func AddPhoto(c *gin.Context){
 		log4go.Error("添加照片失败:",err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    -100,
-			"err_msg": "添加照片失败",
+			"desc": "添加照片失败",
 			"page":map[string]interface{}{},
 		})
 		return
@@ -746,7 +968,7 @@ func AddPhoto(c *gin.Context){
 		log4go.Error("获取照片uri失败:",err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    -100,
-			"err_msg": "获取照片uri失败",
+			"desc": "获取照片uri失败",
 			"page":map[string]interface{}{},
 		})
 		return
@@ -757,7 +979,7 @@ func AddPhoto(c *gin.Context){
 	//	log4go.Error("存储uri失败:",err)
 	//	c.JSON(http.StatusOK, gin.H{
 	//		"code":    -100,
-	//		"err_msg": "存储uri失败",
+	//		"desc": "存储uri失败",
 	//		"page":map[string]interface{}{},
 	//	})
 	//	return
@@ -768,7 +990,7 @@ func AddPhoto(c *gin.Context){
 			log4go.Error("查询人员失败:",err)
 			c.JSON(http.StatusOK, gin.H{
 				"code":    -100,
-				"err_msg": "查询人员失败",
+				"desc": "查询人员失败",
 				"page":map[string]interface{}{},
 			})
 			return
@@ -784,10 +1006,15 @@ func AddPhoto(c *gin.Context){
 		log4go.Error("更新人员失败:",err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    -100,
-			"err_msg": "更新人员失败",
+			"desc": "更新人员失败",
 			"page":map[string]interface{}{},
 		})
 		return
+	}
+
+	err = dao.DeleteSubjectShip(subject.Uuid)
+	if err != nil{
+		log4go.Error("delete subject err",err)
 	}
 
 	//json_data["id"] = photoship.ID
@@ -795,9 +1022,54 @@ func AddPhoto(c *gin.Context){
 	//c.JSON(http.StatusOK, json_data)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
-		"err_msg": "",
+		"desc": "",
 		"data":    json_data,
 		"page":map[string]interface{}{},
 	})
 }
 
+func DeletePerson(c *gin.Context){
+	delete_id,_ := c.Params.Get("id")
+	if delete_id == ""{
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "id错误",
+			"data":    map[string]interface{}{},
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	id,_ := strconv.Atoi(delete_id)
+	subject,err := dao.FindSubjectShip2("","",id)
+	if err != nil{
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "本地查询错误",
+			"data":    map[string]interface{}{},
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+
+	uuidlist := []string{subject.Uuid}
+	params := map[string]interface{}{
+		"uuidList":uuidlist,
+	}
+	_,err = hongtu.DeleteSubject(params)
+	if err != nil{
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -100,
+			"desc": "鸿图删除访客失败",
+			"data":    map[string]interface{}{},
+			"page":map[string]interface{}{},
+		})
+		return
+	}
+	dao.DeleteShip2(id)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"desc": "",
+		"data":    map[string]interface{}{"id":id},
+		"page":map[string]interface{}{},
+	})
+}
